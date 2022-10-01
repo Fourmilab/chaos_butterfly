@@ -1,0 +1,210 @@
+
+                    Fourmilab Lorenz Butterfly
+
+                        Development Log
+
+
+2022 September 26
+
+Added Set variables for all Lorentz parameters: beta, rho, sigma, and
+deltaT.  These may be either floats or rationals, and if the value is
+omitted, resets the variable to the default.
+
+Added Set variable for scale.
+
+Added all new variables to the Status output.  Added running and
+attached to Status, and show to whom we're attached if so.
+
+Replaced the original Test/Quit command structure with a:
+    Run on/off/time/async
+command as in Double Pendulum.
+
+Added the:
+    Set path on/off/lines [ permanent/clear ]
+mechanism from Double Pendulum.  I found that the same 12 line plotter
+scripts we used in that object seem to keep up and avoid message loss
+here.
+
+Added a Set path width n command to set the width of paths, both
+particle and line.  Note that particle width cannot be set below
+0.3125 and line width will be snapped to the closest of the values
+supported by the line plotters: 0.01, 0.015, 0.02, 0.025.  Thus, you'll
+want to tune this setting based upon the kind of path you're going to
+draw.
+
+Installed the link message code to support scripts and menus.
+
+Installed a "Script: Configuration" to test script execution.
+
+2022 September 27
+
+A great many things were messed up regarding drawing lines for trails.
+First of all, the scripts for permanent and temporary line prims had
+different tables for widths, resulting in absurdly fat lines when
+permanent prims were selected.  The temporary prim script lacked the
+code to set PRIM_TEMP_ON_REZ based upon its name, and hence required a
+hard temporary setting in the prim definition, resulting in the
+"peekaboo prim" problem when editing it.  Finally, the temporary prim's
+script was from the Orbits literary output and lacked all comments.  As
+fixed, the two scripts are now absolutely identical and determine their
+permanence from their names.
+
+Added the ability to plot critical points, depending upon the current
+parameters, with:
+    Set critical [ permanent ]
+This draws axes gnomons at the critical points.  These are usually
+temporary prims, but you can make them permanent by so specifying.
+They will be cleared by Set path line clear.
+
+On further reflection, changed the drawing of critical point gnomons
+to use the colours of the viewer labeling of axes: X red, Y green, Z
+blue.
+
+Added "Set path colour <r,g,b>" to set the colour of both particle and
+line paths.
+
+Licensed a collection of nine butterfly textures from:
+    https://www.shutterstock.com/image-vector/collection-multicolored-butterflies-vector-illustration-1912569607
+These are EPS vector images which I converted into PNGs with
+transparency using Gimp to import the EPS at 300 dpi, then cropped,
+scaled, and added transparency.  I may see if I can find some natural
+photos of real butterflies to add as well.
+
+Added a "Set offset <x,y,z>" command to set the offset from the initial
+position of the butterfly to where it begins flight.  This is usually
+used to raise the flight display so it doesn't intersect the ground,
+but you can set it however you wish.
+
+There is a mystery when attached to an avatar.  If you perform a run,
+then stop, and then run again, sometimes, but not always, the avatar
+just remains stuck at the starting position.  Trace shows the
+llMoveToTarget calls are being made to correct locations, the avatar is
+physical, and that everything seems normal, but the avatar doesn't
+move.  If you then use the viewer button to stop flying, suddenly the
+avatar starts moving normally, but with the "falling" animation.  If
+you then put the avatar back in flying mode, everything is fine again.
+I have tried forcing a llStopMoveToTarget(), delays, etc., but nothing
+so far has made any difference once you get in this stuck mode.  The
+only way to escape seems to be the manual stop flying while you're
+stuck.  I have no idea what is going on.
+
+Added a "Set texture name" command which replaces the butterfly texture
+with the named one in the inventory.  These texture names must be all
+lower case and contain no spaces, since I don't want to bring in the
+big and messy inventoryName function we use elsewhere.  If no name is
+specified, textures in the inventory are listed.
+
+2022 September 28
+
+Installed an automatic scaling mechanism so that the hue range of
+trails in polychrome mode accurately reflects the extreme excursion
+based upon the current parameters.  Whenever a run is started or any
+of the parameters change, updateScale() is called which performs
+1000 iterations and records the maximum excursion from the closest
+critical point by the trajectory.  This is stored in maxExcursion,
+which is used to scale the hue in which the trail is drawn.
+
+Changed the Run on command to start the simulation at a randomly
+chosen point between 1/6 and 1/5 along a vector connecting critical
+points 1 and 2.
+
+Added the ability to texture with top and bottom butterfly images.
+The "Set texture" command now looks for a companion image with the
+specified name and "-bottom" appended.  If found, that image is placed
+on the bottom of the butterfly prim.
+
+Made a top and bottom set for "butterfly10" from the Wikimedia image of
+Morpho menelaus, which is licensed under Creative Commons
+Attribution-Share Alike 4.0 International license.
+    https://en.wikipedia.org/wiki/File:Morpho_menelaus_huebneri_MHNT_Male.jpg
+
+2022 September 29
+
+After many hours of experimentation, I am getting a few glimmers of
+enlightenent on why particle trails do not align with critical point
+gnomons when we're attached to an avatar.  The key clue is that line
+trails, which are placed based upon the transformed Lorenz co-ordinates
+work just fine.  What's happening with particles is, in short, that
+we're moving the avatar to follow the trajectory which causes it to
+move its centre of mass (the hip bone) to the position we specify.
+But the attachment is to another bone (usually the chest), and this
+not only has an offset from the avatar position, that offset varies as
+the avatar moves.  To correct for this offset, we would need to get the
+real-time offset from the avatar position to the attachment position,
+and I can't find any way to do this.
+
+We may just have to live with this.  If you want trails that align with
+the Set crit points whie attached, use Set path lines.  Otherwise, it's
+going to be wonky.
+
+Another infelicitous behaviour of particle trails is that since the
+particle emitter in the butterfly is offset from the avatar's centre,
+when the avatar turns, you will get a discontinuity in the trail.  The
+only way to keep that from happening would be to make a two prim
+butterfly in which there was a prim to be attached to the avatar centre
+but transparent, to hold the particle emitter, and another, visible, to
+actually do the work.  I find it difficult to justify all of this
+complexity to remedy a minor cosmetic problem which I suspect few
+people will ever encounter since most won't ever wear the butterfly as
+an attachment in the first place.
+
+Added a general lorenz2Region() function to transform Lorenz
+co-ordinates to region co-ordinates rather than writing it out in three
+places.  Added logic to the function to rotate by the rotation of the
+object at the time the Run started, allowing control of the orientation
+of the trails in region space.  Made the restoration of starting point
+at Run off also restore the initial rotation rather than resetting to a
+fixed value.  This applies also when attached to an avatar.  The path
+flown in the sky will depend upon the initial rotation of the flying
+avatar at the time of the "Run on".
+
+Made a texture, top and bottom, of the Millennium Falcon from:
+    https://www.the-millennium-falcon.com/2018/03/12/done/
+It isn't just butterflies any more!
+
+When you started in paths mode, you'd often get a particle trail from
+the start point to the first computed point on the trajectory even
+though the particle system was only enabled after the move to the start
+of the trajectory.  This appears to be because we used
+llSetLinkPrimitiveParamsFast() for the move and it was too fast--the
+viewer enabled the particle system before it got the command to start
+the move.  I added a 0.2 second llSleep() after the initial move before
+enabling the particle system and that appears to have fixed it.
+
+2022 September 30
+
+Added a plotLine() function to assemble and send the request to a Line
+plotter to draw a line in space and replaced all of the written-out
+instances of this code with a call to the function.
+
+If the user tried to "Set critical" before a Run was started, the
+critical points would be drawn in the wrong place because the initial
+position and rotation of the object had not been captured.  Trying to
+obtain them in the Set critical command could mess things up when the
+command was issued while running, so I simply added a test to reject
+the command except when a simulation was running.
+
+2022 October 1
+
+To allow different levels of trace information, I added the ability
+to "Set trace n" which sets it to the given value.  The "on" setting
+corresponds to n = 1.
+
+Created a Git repository and made an initial commit of the current
+state of development, including scripts, textures, notecards, and this
+log.
+
+
+
+
+Notes and to-do:
+
+    (Place particle emitter in link, and then position link at the
+     co-ordinates that put it at avatar's centre point.  But this won't
+     work as skeleton moves the attachment and link away from that.)
+
+
+    * More than one run session with attached object.
+    * Reset command to restore initial settings
+    * Offset of crit points when wearing
+    * Deployer, like Hatch in Birds

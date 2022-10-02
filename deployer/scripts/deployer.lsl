@@ -186,13 +186,13 @@
 
         } else if (abbrP(command, "de")) {
             if (argn < 2) {
-                tawk("Usage: deploy n_sites radius t_rad t_alt height uniform/gaussian/igauss");
+                tawk("Usage: deploy n_sites radius hmin hmax texture uniform/gaussian/igauss");
             } else {
                 integer nsites = (integer) arg(args, argn, 1, "1");
                 float radius = (float) arg(args, argn, 2, "10");
-                float t_rad = (float) arg(args, argn, 3, "0.1");
-                float t_alt = (float) arg(args, argn, 4, "99");
-                float height = (float) arg(args, argn, 5, "1");
+                float hmin = (float) arg(args, argn, 3, "0.1");
+                float hmax = (float) arg(args, argn, 4, "5");
+                integer texture = (integer) arg(args, argn, 5, "0");
                 string randr = arg(args, argn, 6, "uniform");
 
                 integer bogus = FALSE;
@@ -200,16 +200,16 @@
                     tawk("Invalid radius: must be 0 < radius < 256");
                     bogus = TRUE;
                 }
-                if ((t_rad <= 0) || (t_rad > 99.9)) {
-                    tawk("Invalid threat radius: must be 0 < t_rad < 99.9");
+                if ((hmin <= 0) || (hmin > 99.9)) {
+                    tawk("Invalid minimum height: must be 0 < hmin < 99.9");
                     bogus = TRUE;
                 }
-                if ((t_alt <= 0) && (t_alt > 99)) {
-                    tawk("Invalid threat altitude: must be 0 < t_alt <= 99");
+                if ((hmax <= hmin) || (hmax > 99)) {
+                    tawk("Invalid height: must be hmin < hmax <= 99");
                     bogus = TRUE;
                 }
-                if ((height <= 0) || (height > 99)) {
-                    tawk("Invalid displayed height: must be 0 < height <= 99");
+                if ((texture < 0) || (texture > 999)) {
+                    tawk("Invalid texture index: must be 0 <= texture <= 999");
                     bogus = TRUE;
                 }
                 if (!(abbrP(randr, "u") || abbrP(randr, "g") || abbrP(randr, "i"))) {
@@ -222,7 +222,7 @@
 
                     for (i = 0; i < nsites; i++) {
                         siteIndex++;
-                        placeSite(siteIndex, radius, t_rad, t_alt, height, randr);
+                        placeSite(siteIndex, radius, hmin, hmax, texture, randr);
                     }
                     if (nsites == 1) {
                         tawk("Deployed butterfly " + (string) siteIndex);
@@ -236,17 +236,17 @@
         //  Help                        Display help text
 
         } else if (abbrP(command, "he")) {
-            tawk("SAM Site Deployer commands:\n" +
-                 "  deploy n_sites radius t_rad t_alt height distribution\n" +
-                 "    n_sites         Number of sites to place\n" +
+            tawk("Butterfly Deployer commands:\n" +
+                 "  deploy n_sites radius hmin hmax texture distribution\n" +
+                 "    n_sites         Number of butterflies to place\n" +
                  "    radius          Maximum distance in X and Y of sites, metres (10)\n" +
-                 "    t_rad           Threat radius of sites (0.1)\n" +
-                 "    t_alt           Threat altitude of sites (99), 0 means 4096 m\n" +
-                 "    height          Displayed height of threat markers (50)\n" +
+                 "    hmin            Minumum height (0.1) m\n" +
+                 "    hmax            Maximum height (5) m\n" +
+                 "    texture         Texture index, 0 for random (0)\n" +
                  "    distribution    Distribution of sites: (Uniform)  [Gaussian, Igaussian]\n" +
                  "  list              List deployed sites in region\n" +
                  "  remove            Delete all deployed sites\n" +
-                 "For additional information, see the Fourmilab Rocket User Guide"
+                 "For additional information, see the Fourmilab Chaotic Butterfly User Guide"
                 );
 
         //  List                        List deployed sites in region
@@ -268,9 +268,10 @@
         return TRUE;
     }
 
-    //  placeSite  --  Place a SAM site within the radius
+    //  placeSite  --  Place a butterfly within the radius
 
-    placeSite(integer siteno, float radius, float siterad, float sitealt, float height, string randr) {
+    placeSite(integer siteno, float radius, float hmin, float hmax,
+              integer texture, string randr) {
 
         vector pos = llGetPos();
         vector where = <-1, -1, 0>;
@@ -293,22 +294,18 @@
                 posx = radius * igRand(1, 1) * rSign();
                 posy = radius * igRand(1, 1) * rSign();
             }
-            where = pos + < posx, posy, height / 2 >;
+            float height = hmin + llFrand(hmax - hmin);
+            where = pos + < posx, posy, height >;
         }
 
         /*  The start_param is encoded as follows:
-                NNRRRAAHH
+                NNTTT
 
                 NN      Site number (1 - 99)
-                RRR     Threat radius, units of 0.1 metres
-                AA      Threat altitude, metres
-                HH      Height of displayed barrier, metres
+                TTT     Texture index, 0 = random, or 1-999
         */
 
-        integer sparam = (siteno * 10000000) +
-            (((integer) llRound(siterad * 10)) * 10000) +
-            (((integer) llRound(sitealt)) * 100) +
-            ((integer) llRound(height));
+        integer sparam = (siteno * 1000) + texture;
 
         /*  Now place the site.  Since we can't llRezObject more
             than ten metres from our current location, jump to

@@ -9,7 +9,8 @@
     integer commandChannel = 11;/*1963*/        /* Command channel in chat (year Edward
                                            Lorenz published "Deterministic Nonperiodic Flow") */
     integer commandH;                   // Handle for command channel
-    integer deployer;                   // Start parameter from deployer
+    integer deployerIndex;              // Object index from deployer
+    key deployerKey;                    // Deployer's key
     key whoDat = NULL_KEY;              // Avatar who sent command
     integer restrictAccess = 0;         // Access restriction: 0 none, 1 group, 2 owner
     integer echo = TRUE;                // Echo chat and script commands ?
@@ -37,7 +38,10 @@
     float pathWidth = 0.1;              // Particle path size
     vector pathColour = <1, 0, 0>;      // Colour of path particles and lines
     integer pathPolychrome = TRUE;      // Colour paths based on distance from critical point
+    float startMin = 15;                // Start fraction of critical point distance minimum
+    float startMax = 25;                // Start fraction of critical point distance maximum
     string fuisWid;                     // Encoded constant plot line width
+    string texBottom = "-bottom";       // Suffix for bottom textures
 
     integer pathChannel = -982449866;   // Channel for communicating with path markers
     string ypres = "W?+:$$";            // It's pronounced "Wipers"
@@ -559,7 +563,8 @@ llOwnerSay("Blooie!  " + (string) hsv);
 
         //  Kaboom                  Flight termination system activate
 
-        } else if ((command == kaboom) && (sparam == kaboom)) {
+        } else if ((id == deployerKey) &&
+                   (command == kaboom) && (sparam == kaboom)) {
             llDie();
 
         //  Run on/off/time/async   Start / stop simulation
@@ -568,7 +573,7 @@ llOwnerSay("Blooie!  " + (string) hsv);
             integer sync = TRUE;
             runEndTime = -1;
             if (argn >= 2) {
-                if (flIsDigit(sparam) >= 0) {
+                if (flIsDigit(sparam)) {
                     runEndTime = llGetTime() + ((float) sparam);
                     sparam = "on";
                 } else if (abbrP(sparam, "as")) {
@@ -598,9 +603,14 @@ llOwnerSay("Blooie!  " + (string) hsv);
                 }
                 updateScale();
                 regPoint = <-1, -1, -1>;
+                /*  Set start point on line between critical points at
+                    a random distance between startMin and startMax
+                    percent of the distance between the two points.  */
                 curPoint = critp1 +
                     (llVecNorm(critp2 - critp1) *
-                        (llVecDist(critp1, critp2) / (5 + llFrand(1))));
+                        (llVecDist(critp1, critp2) *
+                         ((startMin / 100) +
+                          ((startMax - startMin) * llFrand(1)) / 100)));
                 llSetTimerEvent(tick);
                 scriptSuspend = sync;
             } else {
@@ -719,10 +729,17 @@ llOwnerSay("Blooie!  " + (string) hsv);
                 lorSigma = ratParam(svalue, 10);
                 updateScale();
 
+            //  Set start min% [ max% ]
+
+            } else if (abbrP(sparam, "st")) {
+                startMin = startMax = (float) svalue;
+                if (argn > 3) {
+                    startMax = (float) llList2String(args, 3);
+                }
+
             //  Set texture [ name ]
 
             } else if (abbrP(sparam, "te")) {
-                string bottom = "-bottom";
                 if (argn < 3) {
                     //  Set texture     (No name, list textures)
                     integer n = llGetInventoryNumber(INVENTORY_TEXTURE);
@@ -730,14 +747,14 @@ llOwnerSay("Blooie!  " + (string) hsv);
                     integer j = 0;
                     for (i = 0; i < n; i++) {
                         string s = llGetInventoryName(INVENTORY_TEXTURE, i);
-                        if ((s != "") && (llSubStringIndex(s, bottom) < 0)) {
+                        if ((s != "") && (llSubStringIndex(s, texBottom) < 0)) {
                             tawk("  " + (string) (++j) + ". " + s);
                         }
                     }
                 } else {
                     //  Set texture name
                     if (llGetInventoryType(svalue) == INVENTORY_TEXTURE) {
-                        string sbottom = svalue + bottom;
+                        string sbottom = svalue + texBottom;
                         if (llGetInventoryType(sbottom) != INVENTORY_TEXTURE) {
                             //  If a matching -bottom texture exists, use it
                             sbottom = svalue;
@@ -942,8 +959,8 @@ commandChannel = 111;       // Use different channel for attachment when testing
             if (llGetAttached() != 0) {
                 llSetRot(attachRot);
             }
-            deployer = sparam;
-            if (deployer == 0) {
+            deployerIndex = sparam / 1000;
+            if (deployerIndex == 0) {
                 llResetScript();
             } else {
                 /*  We were launched by deployer.  Skip script
@@ -952,6 +969,41 @@ commandChannel = 111;       // Use different channel for attachment when testing
                     channel instead.  */
                 commandChannel += 1000;     // Offset to deployer channel
                 initState();
+                deployerKey = llList2Key(llGetObjectDetails(llGetKey(),
+                                         [ OBJECT_REZZER_KEY ]), 0);
+                integer deployerTex = sparam % 1000;
+                integer n = llGetInventoryNumber(INVENTORY_TEXTURE);
+                integer i;
+                integer j = 0;
+                string deployerTexture;
+                //  Search for a matching non-bottom texture, counting them
+                for (i = 0; i < n; i++) {
+                    string s = llGetInventoryName(INVENTORY_TEXTURE, i);
+                    if ((s != "") && (llSubStringIndex(s, texBottom) < 0)) {
+                        j++;
+                        if (j == deployerTex) {
+                            deployerTexture = s;
+                            i = n + 1;
+                        }
+                    }
+                }
+                //  If texture index is zero, pick based on site number
+                if (deployerTex == 0) {
+                    deployerTex = ((deployerIndex - 1) % j) + 1;
+                    j = 0;
+                    for (i = 0; i < n; i++) {
+                        string s = llGetInventoryName(INVENTORY_TEXTURE, i);
+                        if ((s != "") && (llSubStringIndex(s, texBottom) < 0)) {
+                            j++;
+                            if (j == deployerTex) {
+                                deployerTexture = s;
+                                i = n + 1;
+                            }
+                        }
+                    }
+                }
+//tawk("Using texture " + (string) deployerTex + " " + deployerTexture);
+                processCommand(owner, "@se te " + deployerTexture, TRUE);
             }
         }
 

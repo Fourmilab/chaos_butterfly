@@ -262,6 +262,68 @@ particle paths, and the Set path lines command now clears existing
 lines without affecting the generation of either line or particle
 paths.
 
+The "Run on" command caused butterflies to quit almost instantly
+because it misinterpreted "on" as a run expiration time due to a bad
+test when I changed it to use flIsDigit().  Fixed.
+
+Added code to allow the Deployer to set the texture used by the
+butterflies it creates.  It passes a texture number from the Deploy
+command via the on_rez() start_param argument, where the number
+corresponds to the numbers show by the "Set texture" command in the
+butterfly model being deployed.  (The llRezObject() function can pass
+only one 32-bit integer to the object being created.)  A texture number
+of zero causes the butterfly to chose its texture based upon its
+instance number from the deployer modulo the number of textures in its
+inventory. In doing this, "-bottom" textures are ignored.
+
+Added a test which restricts the magic command the Deployer sends to
+butterflies to cause them to self-destruct to only responding if the
+command was sent by the Deployer that created the butterfly.  This
+prevents malicious sending of this command by others or butterflies
+being destroyed by a different Deployer in the same region.
+
+Added a "Set start min [ max ]" command to specify a range of
+percentages of the distance between the critical points from which the
+starting point will be chosen by the Run command.  If only one number
+is given, that value will always be used.  You can specify negative
+percentages and percentages greater than 100 if you wish points outside
+the limits of the critical points.  Note that if you specify 0 or 100
+exactly (the critical points), the butterfly will remain stuck there as
+those are fixed points for the system.
+
+To run sensitive dependence on initial conditions experiment:
+    Rez two butterflies near one another.
+    Edit the Configuration script in 1 and add:
+        Channel 4001
+    Edit the Configuration script in 2 and add:
+        Channel 4002
+    Edit objects and move 1 and 2 to the same position.
+    /1963 boot
+    /4001 set texture butterfly1
+    /4002 set texture butterfly2
+    # Start experiment run
+    /4001 set start 20
+    /4002 set start 20.00001
+    /4002 channel 4001
+    /4001 run on
+    # When done
+    /4001 run off
+    /4001 boot
+You can now run the experiment again, starting with setting the
+"Set start" commands with whatever settings you want to try.
+
+If you start from identical start points, after a while one of the
+butterflies may get ahead of the other, but they will both continue to
+follow the same trajectories.  The position discrepancy is because
+each butterfly has its own update clock and lag in the Second Life
+simulator causes them to drift apart over long periods of time even
+though they are set to the same rate.  If the start points differ even
+by a tiny amount, however, the paths will rapidly diverse and before
+long the butterflies will be circling different critical points.
+
+
+
+
 
 Notes and to-do:
 
@@ -273,4 +335,6 @@ Notes and to-do:
     * More than one run session with attached object.
     * Reset command to restore initial settings
     * Offset of crit points when wearing
-    * Deployer, like Hatch in Birds
+
+    * Start parameter as % distance from critical points
+    * Sensitive dependence example

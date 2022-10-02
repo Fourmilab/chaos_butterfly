@@ -9,6 +9,7 @@
     integer commandChannel = 11;/*1963*/        /* Command channel in chat (year Edward
                                            Lorenz published "Deterministic Nonperiodic Flow") */
     integer commandH;                   // Handle for command channel
+    integer deployer;                   // Start parameter from deployer
     key whoDat = NULL_KEY;              // Avatar who sent command
     integer restrictAccess = 0;         // Access restriction: 0 none, 1 group, 2 owner
     integer echo = TRUE;                // Echo chat and script commands ?
@@ -40,6 +41,7 @@
 
     integer pathChannel = -982449866;   // Channel for communicating with path markers
     string ypres = "W?+:$$";            // It's pronounced "Wipers"
+    string kaboom = "n?+:$$";           // Flight termination system access code
 
     string helpFileName = "Fourmilab Lorenz Butterfly User Guide";
 
@@ -52,8 +54,8 @@
 
     vector critp1;                      // Critical point 1
     vector critp2;                      // Critical point 2
-vector rcritp1;                         // Critical point 1 region coords
-vector rcritp2;                         // Critical point 2 region coords
+    vector rcritp1;                     // Critical point 1 in region coords
+    vector rcritp2;                     // Critical point 2 in region coords
     float maxExcursion;                 // Maximum excursion from closest critical point
 
     vector curPoint = < 1, 1, 1 >;      // Current position in Lorenz co-ordinates
@@ -273,10 +275,11 @@ llOwnerSay("Blooie!  " + (string) hsv);
         if (a) {        // Is it greater than or less than zero ?
             //  Denormalized range check and last stride of normalized range
             if ((a = llFabs(a)) < 2.3509887016445750159374730744445e-38) {
-                b = b | (integer) (a / 1.4012984643248170709237295832899e-45);   // Math overlaps; saves CPU time
+                // Math overlaps; saves CPU time
+                b = b | (integer) (a / 1.4012984643248170709237295832899e-45);
             //  We never need to transmit infinity, so save the time testing for it.
             // } else if (a > 3.4028234663852885981170418348452e+38) { // Round up to infinity
-            //     b = b | 0x7F800000;                                 // Positive or negative infinity
+            //     b = b | 0x7F800000;                  // Positive or negative infinity
             } else if (a > 1.4012984643248170709237295832899e-45) { // It should at this point, except if it's NaN
                 integer c = ~-llFloor(llLog(a) * 1.4426950408889634073599246810019);
                 //  Extremes will error towards extremes. The following corrects it
@@ -288,7 +291,6 @@ llOwnerSay("Blooie!  " + (string) hsv);
                 b = b | 0x7FC00000;
             }
         }
-
         return llGetSubString(llIntegerToBase64(b), 0, 5);
     }
 
@@ -361,7 +363,7 @@ llOwnerSay("Blooie!  " + (string) hsv);
         attached = TRUE;
         llSetRot(attachRot);
         attachPos = llGetLocalPos();
-tawk("Attached at " + (string) attachPos);
+//tawk("Attached at " + (string) attachPos);
     }
 
     //  pathSetColour  --  Get colour of path at current point
@@ -419,25 +421,7 @@ tawk("Attached at " + (string) attachPos);
 
     drawGnomon(vector origin, float markSize, float armWid, integer perm) {
         string fwid = fuis(armWid);
-/*
-        string sperm = llChar(48 + perm);
-        string splno = (string) (plotterNo + 1);
-        llMessageLinked(LINK_THIS, LM_PL_DRAW,
-            fv(origin + <-markSize, 0, 0>) + fv(origin + <markSize, 0, 0>) +
-                fv(<1, 0, 0>) + fwid + sperm + splno,
-            whoDat);
-        llMessageLinked(LINK_THIS, LM_PL_DRAW,
-            fv(origin + <0, -markSize, 0>) + fv(origin + <0, markSize, 0>) +
-                fv(<0, 1, 0>) + fwid + sperm + splno,
-            whoDat);
-        llMessageLinked(LINK_THIS, LM_PL_DRAW,
-            fv(origin + <0, 0, -markSize>) + fv(origin + <0, 0, markSize>) +
-                fv(<0, 0, 1>) + fwid + sperm + splno,
-            whoDat);
-        /*  Gutsy!  We assume we can enqueue three messages to
-            the same plotter without the possibility of loss.
-        plotterNo = (plotterNo + 1) % linePlotters;
-*/
+
         plotLine(origin + <-markSize, 0, 0>,
                  origin + <markSize, 0, 0>, <1, 0, 0>, fwid, perm);
         plotLine(origin + <0, -markSize, 0>,
@@ -510,7 +494,7 @@ tawk("Attached at " + (string) attachPos);
         string command = llList2String(args, 0);    // The command
         string sparam = llList2String(args, 1);     // First argument, for convenience
 
-        //  Access who                  Restrict chat command access to public/group/owner
+        //  Access public/group/owner   Restrict chat command access
 
         if (abbrP(command, "ac")) {
             string who = sparam;
@@ -573,6 +557,11 @@ tawk("Attached at " + (string) attachPos);
         } else if (abbrP(command, "he")) {
             llGiveInventory(id, helpFileName);      // Give requester the User Guide notecard
 
+        //  Kaboom                  Flight termination system activate
+
+        } else if ((command == kaboom) && (sparam == kaboom)) {
+            llDie();
+
         //  Run on/off/time/async   Start / stop simulation
 
         } else if (abbrP(command, "ru")) {
@@ -599,7 +588,7 @@ tawk("Attached at " + (string) attachPos);
                         savePos = llList2Vector(pr, 0);
                         saveRot = llList2Rot(pr, 1);
                     } else {
-                        tawk("Please start flying before starting simulation.");
+                        tawk("Please start flying before Run.");
                         running = FALSE;
                         return FALSE;
                     }
@@ -626,7 +615,6 @@ tawk("Attached at " + (string) attachPos);
                     llStopMoveToTarget();
                 } else {
                     llSetPos(savePos);
-//                    llSetRot(llEuler2Rot(< PI_BY_TWO, 0, 0 >));
                     llSetRot(saveRot);
                 }
                 scriptResume();
@@ -655,11 +643,6 @@ tawk("Attached at " + (string) attachPos);
                 /*  Compute critical points in Lorenz co-ordinates and
                     establish scaling to region co-ordinates.  */
                 updateScale();
-                //  Map critical points to region co-ordinates
-//                vector rp1 = savePos + regionOffset + (critp1 * globalScale);
-//                vector rp2 = savePos + regionOffset + (critp2 * globalScale);
-//vector rp1 = lorenz2Region(critp1);
-//vector rp2 = lorenz2Region(critp2);
                 drawGnomon(rcritp1, markSize, 0.015, perm);
                 drawGnomon(rcritp2, markSize, 0.015, perm);
 
@@ -683,32 +666,34 @@ tawk("Attached at " + (string) attachPos);
 
             } else if (abbrP(sparam, "pa")) {
                 if (abbrP(svalue, "li")) {
-                    trails = TRUE;
-                    flPlotPerm = FALSE;
+                    //  Set path lines
+                    string larg = llList2String(args, 3);
                     if (argn >= 4) {
-                        string larg = llList2String(args, 3);
-                        flPlotPerm = abbrP(larg, "pe");
+                        //  Set path lines clear
                         if (abbrP(larg, "cl")) {
-                            trails = FALSE;
                             clearPaths();
-                        } else {
-                            if (paths) {
-                                paths = FALSE;
-                            }
+                            return TRUE;
                         }
                     }
+                    flPlotPerm = abbrP(larg, "pe");
+                    trails = TRUE;
+                    paths = FALSE;
+                    drawPaths();
                 } else if (abbrP(svalue, "co")) {
+                    //  Set path colour <r, g, b>
                     string colarg = llList2String(args, 3);
                     if (!(pathPolychrome = abbrP(colarg, "po"))) {
                         pathColour = (vector) colarg;
                     }
                 } else if (abbrP(svalue, "wi")) {
+                    //  Set path width n
                     pathWidth = (float) llList2String(args, 3);
                     fuisWid = fuis(pathWidth);
                     if (running && paths) {
                         drawPaths();
                     }
                 } else {
+                    //  Set path on/off
                     if (trails && (!flPlotPerm)) {
                         clearPaths();
                     }
@@ -739,6 +724,7 @@ tawk("Attached at " + (string) attachPos);
             } else if (abbrP(sparam, "te")) {
                 string bottom = "-bottom";
                 if (argn < 3) {
+                    //  Set texture     (No name, list textures)
                     integer n = llGetInventoryNumber(INVENTORY_TEXTURE);
                     integer i;
                     integer j = 0;
@@ -749,9 +735,11 @@ tawk("Attached at " + (string) attachPos);
                         }
                     }
                 } else {
+                    //  Set texture name
                     if (llGetInventoryType(svalue) == INVENTORY_TEXTURE) {
                         string sbottom = svalue + bottom;
                         if (llGetInventoryType(sbottom) != INVENTORY_TEXTURE) {
+                            //  If a matching -bottom texture exists, use it
                             sbottom = svalue;
                         }
                         llSetLinkPrimitiveParamsFast(LINK_THIS,
@@ -886,9 +874,10 @@ tawk("Attached at " + (string) attachPos);
                  " found at step " + (string) foundI);
         }
         curPoint = cpsave;
-rcritp1 = lorenz2Region(critp1);
-rcritp2 = lorenz2Region(critp2);
-tawk("Region critical points " + (string) rcritp1 + " " + (string) rcritp2);
+        //  Compute critical point locations in region co-ordinates
+        rcritp1 = lorenz2Region(critp1);
+        rcritp2 = lorenz2Region(critp2);
+//tawk("Region critical points " + (string) rcritp1 + " " + (string) rcritp2);
     }
 
     //  lorenz2Region  --  Convert Lorenz co-ordinates to region
@@ -898,60 +887,76 @@ tawk("Region critical points " + (string) rcritp1 + " " + (string) rcritp2);
         return savePos + ((lor * globalScale) * unRot) + regionOffset;
     }
 
+    //  initState  --  Initialise script
+
+    initState() {
+        whoDat = owner = llGetOwner();
+        savePos = llGetPos();
+//tawk("Pos " + (string) savePos + "  Rot " + (string) (llRot2Euler(llGetRot()) * RAD_TO_DEG));
+
+        //  Reset the script and menu processors
+        llMessageLinked(LINK_THIS, LM_SP_RESET, "", whoDat);
+        llMessageLinked(LINK_THIS, LM_MP_RESET, "", whoDat);
+        llSleep(0.1);           // Allow script process to finish reset
+        sendSettings();
+
+        //  Count how many line plotters we have in the inventory
+
+        fuisWid = fuis(0.025);          // Initialise constant plot line width
+        linePlotters = 0;
+        while (llGetInventoryType("Line plotter " + (string) (linePlotters + 1)) ==
+                    INVENTORY_SCRIPT) {
+            linePlotters++;
+        }
+
+        //  Set sit position and default camera view
+
+        llSetSitText("Fly");
+        vector dSIT_POS = <0, 0.7, -0.5>;
+        rotation dSIT_ROTATION = llAxisAngle2Rot(<1, 0, 0>, -PI_BY_TWO) *
+            flRotBetween(<-1, 0, 0>, <0, 0, 1>);
+        llLinkSitTarget(LINK_THIS, dSIT_POS, dSIT_ROTATION);
+        vector dCAM_OFFSET = <0, 1, 2>; // Offset of camera lens from pilot sit position
+        vector dCAM_ANG = <0, 0, -8>;   // Camera look-at point relative to pilot CAM_OFFSET
+        llSetLinkCamera(LINK_THIS, dCAM_OFFSET, dCAM_ANG);
+
+        if (llGetAttached() != 0) {
+commandChannel = 111;       // Use different channel for attachment when testing
+            attachMe(llGetOwnerKey(llGetKey()));
+            llStopMoveToTarget();
+        }
+
+        //  Start listening on the command chat channel
+        commandH = llListen(commandChannel, "", NULL_KEY, "");
+        tawk("Listening on /" + (string) commandChannel);
+
+        //  If a configuration script exists, run it
+        if (llGetInventoryType(configScript) == INVENTORY_NOTECARD) {
+            llMessageLinked(LINK_THIS, LM_SP_RUN, configScript, whoDat);
+        }
+    }
+
     default {
 
         on_rez(integer sparam) {
             if (llGetAttached() != 0) {
                 llSetRot(attachRot);
             }
-            llResetScript();
+            deployer = sparam;
+            if (deployer == 0) {
+                llResetScript();
+            } else {
+                /*  We were launched by deployer.  Skip script
+                    reset (which would cause us to forget that)
+                    and listen on the deployer communication
+                    channel instead.  */
+                commandChannel += 1000;     // Offset to deployer channel
+                initState();
+            }
         }
 
         state_entry() {
-            whoDat = owner = llGetOwner();
-            savePos = llGetPos();
-tawk("Pos " + (string) savePos + "  Rot " + (string) (llRot2Euler(llGetRot()) * RAD_TO_DEG));
-
-            //  Reset the script and menu processors
-            llMessageLinked(LINK_THIS, LM_SP_RESET, "", whoDat);
-            llMessageLinked(LINK_THIS, LM_MP_RESET, "", whoDat);
-            llSleep(0.1);           // Allow script process to finish reset
-            sendSettings();
-
-            //  Count how many line plotters we have in the inventory
-
-            fuisWid = fuis(0.01);           // Initialise constant plot line width
-            linePlotters = 0;
-            while (llGetInventoryType("Line plotter " + (string) (linePlotters + 1)) ==
-                        INVENTORY_SCRIPT) {
-                linePlotters++;
-            }
-
-            //  Set sit position and default camera view
-
-            llSetSitText("Fly");
-            vector dSIT_POS = <0, 0.7, -0.5>;
-            rotation dSIT_ROTATION = llAxisAngle2Rot(<1, 0, 0>, -PI_BY_TWO) *
-                flRotBetween(<-1, 0, 0>, <0, 0, 1>);
-            llLinkSitTarget(LINK_THIS, dSIT_POS, dSIT_ROTATION);
-            vector dCAM_OFFSET = <0, 1, 2>; // Offset of camera lens from pilot sit position
-            vector dCAM_ANG = <0, 0, -8>;   // Camera look-at point relative to pilot CAM_OFFSET
-            llSetLinkCamera(LINK_THIS, dCAM_OFFSET, dCAM_ANG);
-
-            if (llGetAttached() != 0) {
-commandChannel = 111;       // Use different channel for attachment when testing
-                attachMe(llGetOwnerKey(llGetKey()));
-                llStopMoveToTarget();
-            }
-
-            //  Start listening on the command chat channel
-            commandH = llListen(commandChannel, "", NULL_KEY, "");
-            tawk("Listening on /" + (string) commandChannel);
-
-            //  If a configuration script exists, run it
-            if (llGetInventoryType(configScript) == INVENTORY_NOTECARD) {
-                llMessageLinked(LINK_THIS, LM_SP_RUN, configScript, whoDat);
-            }
+            initState();
         }
 
         /*  The listen event handler processes messages from
@@ -1023,60 +1028,61 @@ commandChannel = 111;       // Use different channel for attachment when testing
         }
 
         timer() {
-//            vector lcPoint = curPoint;
             lorIterate();
             vector lRegPoint = regPoint;
-//            regPoint = savePos + regionOffset + (curPoint * globalScale);
-regPoint = lorenz2Region(curPoint);
-//tawk("RegPoint " + (string) regPoint);
-//            rotation vdir = flRotBetween(<0, 0, 1>, -llVecNorm(curPoint - lcPoint));
-//  Find closest critical point
-vector closeCp = rcritp1;
-//string v1 = "Close 1 ";
-if (llVecDist(regPoint, rcritp2) < llVecDist(regPoint, rcritp1)) {
-    closeCp = rcritp2;
-//v1 = "Close 2 ";
-}
-//  Direction vector of flight
-vector flight = llVecNorm(regPoint - lRegPoint);
-//  Vector from current position to closest critical point
-vector look = llVecNorm(closeCp - regPoint);
-////  Normal to plane defined by flight and look vectors
-//vector flnorm = flight % look;
-//  Rotation to align local Z with direction of flight
-rotation vdir = flRotBetween(<0, 0, 1>, -flight);
-integer permx = trace >= 4;
-if (trace >= 3) {
-//  Plot model orientation vectors
-plotLine(regPoint, regPoint + (llRot2Fwd(vdir) * 0.3), <1, 0, 0>, fuisWid, permx);
-plotLine(regPoint, regPoint + (llRot2Left(vdir) * 0.3), <0, 1, 0>, fuisWid, permx);
-plotLine(regPoint, regPoint + (llRot2Up(vdir) * 0.3), <0, 0, 1>, fuisWid, permx);
+            //  New position in region co-ordinates
+            regPoint = lorenz2Region(curPoint);
+            //  Find closest critical point
+            vector closeCp = rcritp1;
+            if (llVecDist(regPoint, rcritp2) < llVecDist(regPoint, rcritp1)) {
+                closeCp = rcritp2;
+            }
+            //  Direction vector of flight
+            vector flight = llVecNorm(regPoint - lRegPoint);
+            //  Vector from current position to closest critical point
+            vector look = llVecNorm(closeCp - regPoint);
+            //  Rotation to align local Z with direction of flight
+            rotation vdir = flRotBetween(<0, 0, 1>, -flight);
+            integer permx = trace >= 4;
+            if (trace >= 3) {
+                //  Plot model orientation vectors
+                plotLine(regPoint, regPoint + (llRot2Fwd(vdir) * 0.3),
+                         <1, 0, 0>, fuisWid, permx);    // Model right, Red
+                plotLine(regPoint, regPoint + (llRot2Left(vdir) * 0.3),
+                         <0, 1, 0>, fuisWid, permx);    // Model up, Green
+                plotLine(regPoint, regPoint + (llRot2Up(vdir) * 0.3),
+                         <0, 0, 1>, fuisWid, permx);    // Model forward, Blue
 
-//  Plot vector from object to closest critical point
-plotLine(regPoint, closeCp, <1, 1, 0>, fuisWid, permx);
-}
-//  Projection of look vector into plane of object rotation
-vector up = llRot2Up(vdir);
-vector lproj = look - ((look * up) * up);
-if (trace >= 3) {
-//  Plot projection into rotation plane
-plotLine(regPoint, regPoint + (lproj * 0.3), <1, 0, 1>, fuisWid, permx);
-}
-//  Rotation to align our local left (actually up in mode) with critical point
-vector left = llRot2Left(vdir);
-float zAxRot = llAcos(lproj * left);
-//  Normal of direction of travel and projected direction to critical point
-vector nUpLproj = up % lproj;
-//  Sign indicates which way we need to rotate
-float rotSign = nUpLproj * left;
-if (trace >= 3) {
-tawk("Z rot " + (string) (zAxRot * RAD_TO_DEG) + " rotSign " + (string) rotSign);
-}
-if (rotSign >= 0) {
-    vdir = vdir / llAxisAngle2Rot(up, zAxRot);
-} else {
-    vdir = vdir * llAxisAngle2Rot(up, zAxRot);
-}
+                //  Plot vector from object to closest critical point
+                plotLine(regPoint, closeCp, <1, 1, 0>,
+                         fuisWid, permx);   // Model to nearest crit, Yellow
+            }
+            //  Projection of look vector into plane of object rotation
+            vector up = llRot2Up(vdir);
+            vector lproj = look - ((look * up) * up);
+            if (trace >= 3) {
+                //  Look projection into rotation plane, Magenta
+                plotLine(regPoint, regPoint + (lproj * 0.3), <1, 0, 1>,
+                    fuisWid, permx);
+            }
+            //  Rotation to align our local left (actually up in model) with critical point
+            vector left = llRot2Left(vdir);
+            float zAxRot = llAcos(lproj * left);
+            //  Normal of direction of travel and projected direction to critical point
+            vector nUpLproj = up % lproj;
+            //  Sign indicates which way we need to rotate
+            float rotSign = nUpLproj * left;
+            if (trace >= 3) {
+                tawk("Z rot " + (string) (zAxRot * RAD_TO_DEG) +
+                     " rotSign " + (string) rotSign);
+            }
+            /*  Rotate model around the axis of its travel so its local
+                up vector faces toward the closest criticial point.  */
+            if (rotSign >= 0) {
+                vdir = vdir / llAxisAngle2Rot(up, zAxRot);
+            } else {
+                vdir = vdir * llAxisAngle2Rot(up, zAxRot);
+            }
 
             if (attached) {
                 llMoveToTarget(regPoint, 0.05);
@@ -1088,20 +1094,15 @@ if (rotSign >= 0) {
             }
             if (lRegPoint.x < 0) {
                 // Wait for position update before starting particle emitter
-                llSleep(0.2);
+                llSleep(0.2);   // Sleep to let viewer catch up with pos change
                 drawPaths();
             }
             if (paths && pathPolychrome) {
+                /*  Set path colour based on distance from closest
+                    critical point.  */
                 drawPaths();
             }
             if (trails && (lRegPoint.x >= 0)) {
-/*
-                llMessageLinked(LINK_THIS, LM_PL_DRAW,
-                    fv(lRegPoint) + fv(regPoint) + fv(pathSetColour()) + fuisWid +
-                        llChar(48 + flPlotPerm) + (string) (plotterNo + 1),
-                    whoDat);
-                plotterNo = (plotterNo + 1) % linePlotters;
-*/
                 plotLine(lRegPoint, regPoint, pathSetColour(),
                          fuisWid, flPlotPerm);
             }

@@ -190,11 +190,77 @@ To allow different levels of trace information, I added the ability
 to "Set trace n" which sets it to the given value.  The "on" setting
 corresponds to n = 1.
 
+Completed the grand revision of the code to rationalise the orientation
+of the model as it moves along its trajectory.  This is done in the
+timer() event after we've computed the next point in the Lorenz
+trajectory.  First, we form the vector from the previous point to the
+new point, normalise it, and call it flight.  We define a vector look
+which is the normalised direction from the new point to the closest of
+the two critical points of the Lorenz system.  We then compute, using
+our local flRotBetween(), the rotation vdir to align the local Z axis
+of the model with the flight vector, which will, given the shape of our
+model and its texture, make it fly along the path from the previous to
+the current point.  This process, however, leaves the rotation around
+this local Z axis as a free parameter, and it comes out essentially
+arbitrary, which results in wild and apparently random (although, of
+course, entirely deterministic) gyrations as the model moves along its
+trajectory.
+
+That won't do.  So, what we do is then proceed to rotate the model
+around its local Z axis so that its top [defined by the side we've so
+textured, which is llRot2Up(vdir)].  Next, we want to project the look
+vector into the plane in which we're going to rotate the model to align
+it, which is:
+    lproj = look - ((look . up) * up)
+Now, we need to compute the rotation about the Z axis to align the top
+of the model with this projected vector, which is the arc cosine of
+lproj dot left.  But, since this is a dot product, it only tells us the
+angle between the two vectors, not the direction in which we need to
+rotate to align them.  So next we compute the cross product of up and
+lproj, which gives the normal of the direction of travel and projected
+direction to the critical point, and then take the dot product of that
+with the left vector.  The sign of this dot product indicates whether
+the projection of the vectors are parallel or antiparallel, and hence
+the direction we need to rotate to align them. Finally, we rotate vdir
+by the computed rotation in the direction indicated by the sign, and
+we're there: the model will point along the direction of travel with
+its top aligned with a vector from its new position to the closest
+critical point.
+
+Now, wasn't that simple?  It's crazy to do, but it looks great and it
+minimises the vertigo-inducing effects of an over the shoulder or
+mouselook view when an avatar is riding the model.
+
 Created a Git repository and made an initial commit of the current
 state of development, including scripts, textures, notecards, and this
 log.
 
+2022 October 2
 
+Made the first rough cut at a deployer, based upon the SAM Site
+deployer for the Rocket, which simplifies placing multiple butterfiles
+in a vicinity to create a cloud of non-interacting butterflies.  The
+deployer places them and then they are subsequently controlled by chat
+commands sent to their common channel, which is 1000 greater than the
+default channel for the stand-alone model.  When rezzed by the
+deployer, the model will respond to a special command sent by the
+deployer which causes it to self-destruct with llDie() when the
+deployer receives the "Remove" command.  This allows easy clean-up of
+created models.
+
+There are myriad features and tweaks that could, and doubtless will, be
+added to the deployer and to the model to work better with it, but it's
+basically working and allows evaluation of its behaviour in order to
+decide where we want to take it.
+
+The Set path command may be trying to do too many things to be
+comprehensible to the user, no less to the humble programmer charged
+with implementing it.  I fixed a bunch of bugs in it without, for the
+moment, undertaking a redesign or splitting it into two or more
+commands.  The Set path lines command now turns off generation of
+particle paths, and the Set path lines command now clears existing
+lines without affecting the generation of either line or particle
+paths.
 
 
 Notes and to-do:

@@ -7,7 +7,9 @@
     key owner;                          //  Owner UUID
     string ownerName;                   //  Name of owner
 
-    integer commandChannel = 75;        // Command channel in chat (S-75 Dvina, SA-2 Guideline)
+    integer commandChannel = 1977;      /* Command channel in chat (year modern
+                                           commercial butterfly breeding began in
+                                           Guernsey) */
     integer commandH;                   // Handle for command channel
     key whoDat = NULL_KEY;              // Avatar who sent command
     integer restrictAccess = 2;         // Access restriction: 0 none, 1 group, 2 owner
@@ -15,7 +17,7 @@
 
     float REGION_SIZE = 256;            // Size of regions
 
-    integer siteChannel = 1011;         // Channel for communicating with butteflies
+    integer siteChannel = 1011;         // Channel for communicating with butterflies
     string ypres = "n?+:$$";            // It's pronounced "Wipers"
 
     integer siteIndex = 0;              // Index of last site deployed
@@ -162,6 +164,11 @@
                 return FALSE;
             }
 
+        //  Boot                        Reset script
+
+        } else if (abbrP(command, "bo")) {
+            llResetScript();
+
         /*  Channel n                   Change command channel.  Note that
                                         the channel change is lost on a
                                         script reset.  */
@@ -237,6 +244,7 @@
 
         } else if (abbrP(command, "he")) {
             tawk("Butterfly Deployer commands:\n" +
+                 "  boot              Reset script\n" +
                  "  deploy n_sites radius hmin hmax texture distribution\n" +
                  "    n_sites         Number of butterflies to place\n" +
                  "    radius          Maximum distance in X and Y of sites, metres (10)\n" +
@@ -246,19 +254,33 @@
                  "    distribution    Distribution of sites: (Uniform)  [Gaussian, Igaussian]\n" +
                  "  list              List deployed sites in region\n" +
                  "  remove            Delete all deployed sites\n" +
-                 "For additional information, see the Fourmilab Chaotic Butterfly User Guide"
+                 "  status            Report status\n" +
+                 "For additional information, see the Fourmilab Chaos Butterfly User Guide"
                 );
 
         //  List                        List deployed sites in region
 
         } else if (abbrP(command, "li")) {
-            llRegionSay(siteChannel, "LIST");
+            llRegionSay(siteChannel, "@list");
 
         //  Remove                      Remove all sites
 
         } else if (abbrP(command, "re")) {
-            llRegionSay(siteChannel, ypres + " " + ypres);
+            llRegionSay(siteChannel, "@" + ypres + " " + ypres);
             siteIndex = 0;
+
+        //  Status                  Print status
+
+        } else if (abbrP(command, "st")) {
+            integer mFree = llGetFreeMemory();
+            integer mUsed = llGetUsedMemory();
+            string s;
+            s += "Deployed channel: " + (string) siteChannel +
+                 "  Deployed: " + (string) siteIndex + "\n";
+            s += "Script memory.  Free: " + (string) mFree +
+                    "  Used: " + (string) mUsed + " (" +
+                    (string) ((integer) llRound((mUsed * 100.0) / (mUsed + mFree))) + "%)";
+            tawk(s);
 
         } else {
             tawk("Huh?  \"" + message + "\" undefined.  Chat /" +
@@ -299,9 +321,9 @@
         }
 
         /*  The start_param is encoded as follows:
-                NNTTT
+                NNNNTTT
 
-                NN      Site number (1 - 99)
+                NNNN    Site number (1 - 9999)
                 TTT     Texture index, 0 = random, or 1-999
         */
 
@@ -314,7 +336,7 @@
 
 //llOwnerSay("Deploy " + (string) siteno + " at " + (string) where + " sparam " + (string) sparam + "  pos " + (string) pos);
         llSetRegionPos(where);
-        llRezObject("Lorenz Butterfly", where, ZERO_VECTOR,
+        llRezObject("Chaos Butterfly", where, ZERO_VECTOR,
             llEuler2Rot(< PI_BY_TWO, 0, 0 >) *
             llEuler2Rot(< 0, 0, llFrand(TWO_PI) >), sparam);
         llSetRegionPos(pos);

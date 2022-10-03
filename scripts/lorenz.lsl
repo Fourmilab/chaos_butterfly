@@ -35,7 +35,7 @@
     integer flPlotPerm = FALSE;         // Use permanent objects for plotted lines ?
     integer linePlotters;               // Number of line plotters in inventory
     integer plotterNo = 0;              // Plotter round-robin selector
-    float pathWidth = 0.1;              // Particle path size
+    float pathWidth = 0.75;             // Particle path size
     vector pathColour = <1, 0, 0>;      // Colour of path particles and lines
     integer pathPolychrome = TRUE;      // Colour paths based on distance from critical point
     float startMin = 15;                // Start fraction of critical point distance minimum
@@ -47,7 +47,7 @@
     string ypres = "W?+:$$";            // It's pronounced "Wipers"
     string kaboom = "n?+:$$";           // Flight termination system access code
 
-    string helpFileName = "Fourmilab Lorenz Butterfly User Guide";
+    string helpFileName = "Fourmilab Chaos Butterfly User Guide";
 
     //  Lorenz attractor parameters
 
@@ -396,7 +396,7 @@ llOwnerSay("Blooie!  " + (string) hsv);
     drawPaths() {
         if (paths && running) {
             llLinkParticleSystem(LINK_THIS,
-                [ PSYS_PART_FLAGS, PSYS_PART_EMISSIVE_MASK,
+                [ PSYS_PART_FLAGS, PSYS_PART_EMISSIVE_MASK | PSYS_PART_RIBBON_MASK,
                   PSYS_SRC_PATTERN, PSYS_SRC_PATTERN_DROP,
                   PSYS_PART_START_SCALE, <1, 1, 1> * pathWidth,
                   PSYS_PART_START_COLOR, pathSetColour(),
@@ -463,13 +463,17 @@ llOwnerSay("Blooie!  " + (string) hsv);
 
     integer processCommand(key id, string message, integer fromScript) {
 
-        if (!checkAccess(id)) {
+        if ((!checkAccess(id)) &&
+            (!((deployerIndex > 0) && (id == deployerKey)))) {
             llRegionSayTo(id, PUBLIC_CHANNEL,
                 "You do not have permission to control this object.");
             return FALSE;
         }
 
         whoDat = id;            // Direct chat output to sender of command
+        if ((deployerIndex > 0) && (id == deployerKey)) {
+            whoDat = llGetOwnerKey(deployerKey);
+        }
 
         /*  If echo is enabled, echo command to sender unless
             prefixed with "@".  The command is prefixed with ">>"
@@ -566,6 +570,11 @@ llOwnerSay("Blooie!  " + (string) hsv);
         } else if ((id == deployerKey) &&
                    (command == kaboom) && (sparam == kaboom)) {
             llDie();
+
+        //  List                    List our object name and position
+
+        } else if (abbrP(command, "li")) {
+            tawk((string) llGetPos() + "  Run: " + eOnOff(running));
 
         //  Run on/off/time/async   Start / stop simulation
 
@@ -960,6 +969,16 @@ commandChannel = 111;       // Use different channel for attachment when testing
                 llSetRot(attachRot);
             }
             deployerIndex = sparam / 1000;
+            string oname = llGetObjectName();
+            integer onx;
+            if ((onx = llSubStringIndex(oname, ":")) > 0) {
+                //  Stored name has colon: trim it
+                oname = llGetSubString(oname, 0, onx - 1);
+            }
+            if (deployerIndex > 0) {
+                oname += ": " + (string) deployerIndex;
+            }
+            llSetObjectName(oname);
             if (deployerIndex == 0) {
                 llResetScript();
             } else {

@@ -359,6 +359,35 @@ it doesn't tell you much of interest.
 Changed the Deployer's command channel to the production value of 1977.
 This is the year modern commercial butterfly breeding began on Guernsey.
 
+2022 October 4
+
+Completed first draft of the Chaos Butterfly User Guide.  This includes
+instructions for the Deployer.
+
+2022 October 5
+
+Made images for the Marketplace listing.
+
+2022 October 6
+
+When making the textures for the butterflies, I originally flooded the
+space around the image with red pixels and then used Gimp's colour to
+alpha feature to make the background transparent.  This left the pixels
+with RGB(1, 0, 0) channels and Alpha 0.  While this looks fine in GIMP,
+it confuses the renderer in Second Life viewers when scaling down the
+texture to lower resolutions, causing "leakage" of red into the edges
+of the image, creating a messy red "halo" around the texture.  I remade
+all of the vector butterfly textures to change the background to black
+transparent pixels to get rid of the halos.
+
+2022 October 7
+
+Tried to make an animated GIF for the Marketplace, but it is basically
+hopeless.  With the complexity of frames needed to show paths, the
+file size blows up to much that only a clip of less than two seconds
+is needed to fit within the 1 Mb maximum GIF size, and that isn't
+enough to show any real action.  We're going to have to rely on the
+YouTube video for people who want to see it in action.
 
 
 Notes and to-do:

@@ -381,7 +381,7 @@ and lower case.)
 
         Set sigma n
             Sets the sigma (σ) parameter of the Lorenz system, which
-            corresponds to the Prandtl number of the fluid in a the
+            corresponds to the Prandtl number of the fluid in the
             physical system.  The Prandtl number is a dimensionless,
             scale-independent number which specifies the ratio of
             momentum to thermal diffusivity of a fluid, varying from
@@ -411,7 +411,9 @@ and lower case.)
         Set tick n
             Sets the time in seconds between animation steps when the
             Run command is active.  For smooth animation, try a setting
-            of 0.1 (a tenth of a second) or a little smaller.
+            of 0.1 (a tenth of a second) or a little smaller.  The
+            default is 0.01, which makes the simulation run about as
+            fast as the simulator can handle it.
 
         Set trace on/off
             Enable or disable output, sent to the owner on local chat,
@@ -438,7 +440,8 @@ DEMONSTRATION AND EXAMPLE SCRIPT NOTECARDS
 
     Configuration
         Default configuration script, which simply displays a message
-        letting the user know about the Demonstration.
+        letting the user know about the Demonstration script and Help
+        command.
 
     Demonstration
         This is the standard demonstration script for the object.
@@ -452,7 +455,7 @@ via local chat (do not specify the chat channel on the script lines).
 This allows you to automatically preset preferences as you like.  This
 is particularly useful if you want to create multiple butterflies that
 accept commands on different chat channels.  Placing a Channel command
-in the Configuration script of each will guarantee the listen on the
+in the Configuration script of each will guarantee they listen on the
 correct channel even if the script is reset.
 
 USING THE BUTTERFLY DEPLOYER
@@ -491,7 +494,7 @@ In addition the Access, Channel, and Clear utility commands are
 accepted as for the butterfly.  The deployed butterflies all listen for
 commands on the default chat channel, 1963.  If you deploy butterflies
 over a large area, you may need to shout (Ctrl-Enter) chat commands so
-they all hear it.
+they all hear them.
 
 PERMISSIONS AND THE DEVELOPMENT KIT
 

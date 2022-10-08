@@ -389,6 +389,21 @@ is needed to fit within the 1 Mb maximum GIF size, and that isn't
 enough to show any real action.  We're going to have to rely on the
 YouTube video for people who want to see it in action.
 
+Created first cut at a Marketplace listing and product directory tree.
+
+For some screwball reason, the colour for the bottom of the Millennium
+Falcon texture had been set to light grey, which caused a shaded
+square to appear even though the border was transparent.  I changed it
+to white and now the border is clear.
+
+After I fixed the Millennium Falcon texture, when Firestorm showed it
+at reduced resolution, it was still using the shaded texture.  Editing
+the object while it was doing this and doing nothing (simple opening
+and closing the editor) fixed it.  I suppose it had an old image in its
+cache which opening the editor forced it to flush.
+
+
+
 
 Notes and to-do:
 
@@ -400,6 +415,4 @@ Notes and to-do:
     * Reset command to restore initial settings
     * Offset of crit points when wearing
 
-    * Start parameter as % distance from critical points
     * Sensitive dependence example
-    * LIST command for deployed butterflies

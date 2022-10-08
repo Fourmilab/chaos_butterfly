@@ -1,0 +1,9 @@
+Simulates Lorenz chaotic attractor system
+
+Flies in space above your parcel
+
+Avatars can ride on flying butterfly
+
+Wearable as avatar accessory­: fly anywhere
+
+Butterfly Deployer to create flocks of butterflies

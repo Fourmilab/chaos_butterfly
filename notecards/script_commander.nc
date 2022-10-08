@@ -1,32 +1,30 @@
+set echo off
 
 #  Main
 
 menu begin Main "Choose command family menu"
 menu button Model "menu show Model"
-menu button Rotate "menu show Rotate"
-menu button View "menu show View"
+menu button Texture "menu show Texture"
+menu button Run "menu show Run"
 menu button Settings "menu show Settings"
 menu button Exit
 menu button "*Timeout*" "echo Menu timed out."
 menu end
 
-#   Rotate
+#   Texture
 
-script set ang "30"
-script set sign "+"
-
-menu begin Rotate "Rotate bobs"
-menu button "0°" "script set ang 0" "menu show Rotate"
-menu button "45°" "script set ang 30" "menu show Rotate"
-menu button "90°" "script set ang 90" "menu show Rotate"
-menu button "135°" "script set ang 135" "menu show Rotate"
-menu button "179°" "script set ang 179" "menu show Rotate"
-menu button "+" "script set sign +" "menu show Rotate"
-menu button "−" "script set sign -" "menu show Rotate"
-menu button "Bob 1" "set angle 1 {sign}{ang}" "menu show Rotate"
-menu button "Bob 2" "set angle 2 {sign}{ang}" "menu show Rotate"
-menu button "Run" "run async" "menu show Rotate"
-menu button "Stop" "run off" "menu show Rotate"
+menu begin Texture "Select butterfly texture"
+menu button "1" "set texture butterfly1" "menu show Texture"
+menu button "2" "set texture butterfly2" "menu show Texture"
+menu button "3" "set texture butterfly3" "menu show Texture"
+menu button "4" "set texture butterfly4" "menu show Texture"
+menu button "5" "set texture butterfly5" "menu show Texture"
+menu button "6" "set texture butterfly6" "menu show Texture"
+menu button "7" "set texture butterfly7" "menu show Texture"
+menu button "8" "set texture butterfly8" "menu show Texture"
+menu button "9" "set texture butterfly9" "menu show Texture"
+menu button "Blue morpho" "set texture butterfly10" "menu show Texture"
+menu button "Mill. Falcon" "set texture falcon" "menu show Texture"
 menu button Main "Menu show Main"
 menu button "*Timeout*" "echo Menu timed out."
 menu end
@@ -63,26 +61,23 @@ menu button "Stop" "run off" "menu show Model"
 menu button Main "Menu show Main"
 menu end
 
-#   View
+#   Run
 
-menu begin View "Set viewing parameters"
-menu button "Smaller" "set scale 0.8x auto" "menu show View "
-menu button "Scale 1" "set scale 1 auto" "menu show View "
-menu button "Bigger" "set scale 1.25x auto" "menu show View "
-menu button "Path lines" "set path lines" "menu show View"
-menu button "Path trail" "set path on" "menu show View"
-menu button "Path off" "set path off" "menu show View"
-menu button "Run" "run async" "menu show View"
-menu button "Stop" "run off" "menu show View"
-menu button "Reset" "reset" "menu show View"
+menu begin Run "Run the simulation"
+menu button "Run" "run asynchronous" "menu show Run"
+menu button "Stop" "run off" "menu show Run"
+menu button "Path trail" "set path on" "menu show Run"
+menu button "Path lines" "set path lines" "menu show Run"
+menu button "Path off" "set path off" "set path lines clear" "menu show Run"
+menu button "Mark critical" "set critical" "menu show Run"
 menu button Main "menu show Main"
 menu button "*Timeout*" "echo Menu timed out."
 menu end
 
+set echo on
+
 menu show Main
 
 script set *
-#set scale 1
-reset
 
 @echo Exiting Commander

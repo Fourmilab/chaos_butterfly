@@ -357,7 +357,8 @@ Added a Status command to the Deployer.  People expect it, even though
 it doesn't tell you much of interest.
 
 Changed the Deployer's command channel to the production value of 1977.
-This is the year modern commercial butterfly breeding began on Guernsey.
+This is the year modern commercial butterfly breeding began on
+Guernsey.
 
 2022 October 4
 
@@ -392,16 +393,146 @@ YouTube video for people who want to see it in action.
 Created first cut at a Marketplace listing and product directory tree.
 
 For some screwball reason, the colour for the bottom of the Millennium
-Falcon texture had been set to light grey, which caused a shaded
-square to appear even though the border was transparent.  I changed it
-to white and now the border is clear.
+Falcon texture had been set to light grey, which caused a shaded square
+to appear even though the border was transparent.  I changed it to
+white and now the border is clear.
 
 After I fixed the Millennium Falcon texture, when Firestorm showed it
 at reduced resolution, it was still using the shaded texture.  Editing
-the object while it was doing this and doing nothing (simple opening
+the object while it was doing this and doing nothing (simply opening
 and closing the editor) fixed it.  I suppose it had an old image in its
 cache which opening the editor forced it to flush.
 
+2022 October 8
+
+The recommended video settings for YouTube HD uploads are:
+    1280x720    (16:9)
+    Container:  MP4
+    Audio codec: AAC-LC
+    Video codec: H.264
+    Progressive scan
+
+Made raw captures for the YouTube video and imported them into a
+working first cut in OpenShot.  Cuts, transitions, titles, captions,
+and sound track have yet to be done.
+
+2022 October 9
+
+Integrated the flRezPermitted() function from Gridmark's
+test_rezscript.lsl and used it to check whether we're allowed to rez
+objects at the current location when enabling Set path lines.  If not,
+we issue a message and ignore the command, which is a lot better than a
+script pop-up message in the viewer.
+
+After more experimentation with the problem of a second Run on command
+failing after a Run off while the butterfly was attached to an avatar,
+evidence pointed toward the sequence we do for Run off, which consists
+of a llMoveToTarget() back to the starting point of the run, followed
+by a quarter second llSleep() to allow the avatar to arrive there and
+then an llStopMoveToTarget(), without which the avatar would remain
+frozen in place.  My theory was that if the llMoveToTarget has not yet
+completed when the StopMove is executed, something: simulator or
+viewer, gets confused and causes subsequent llMoveToTarget() calls from
+the next Run to be ignored.  The fact that the failure was not
+repeatable provided evidence of a timing problem.
+
+By experimentation, I found that introducing a 1.5 second delay before
+the llStopMoveToTarget() instead of the 0.25 second before completely
+eliminates the failure.  If this proves insufficient (for example in
+heavily loaded simulations), I may have to introduce something using
+the llTarget() function and the at_target() event to detect when the
+final llMoveToTarget has completed before stopping the move to target.
+
+Implemented the Reset command, which I'd not gotten around to before.
+This will be very handy in the Demonstration script, which now has to
+be extra careful to explicitly reset things it changed in specific
+demonstrations before the next one.
+
+Made the "Set trace" setting bit-coded.  Set to the sum of the following:
+    1   General trace, including script and menu processors
+    2   Critical point and scale factor computation
+    4   Orientation vectors for model
+    8   Make orientation vectors permanent
+
+2022 October 10
+
+I decided there's no reason to add the flRezPermitted() check for the
+ability to rez objects to the Deployer because if it wasn't able to rez
+objects, you wouldn't have been able to rez it in the first place.
+Sure, you could wear it and try rezzing on land where you're not
+permitted, but anybody who goes to that much trouble to get a
+permissions pop-up deserves to see it.
+
+Commented out the code for the orientation trace plot generation
+enabled by Set trace bits 4 and 8.  This saves a bit of script memory
+(we're at 84% now) and nobody but a crazed developer chasing a model
+rotation problem would need to enable it.
+
+When the butterfly was worn as an avatar attachment, the trajectories
+plotted in region space were rotated 90 degrees with respect to those
+drawn by a butterfly rezzed in the region.  This was due to
+lorenz2Region() composing a rotation to correct for the rotation to
+align the local Z axis with the region X axis of the rezzed butterfly.
+I added code to skip composing this rotation when the butterfly is worn
+as an attachment.
+
+Developed a streamlined sensitive dependence experiment.
+    Rez "Sensitive Dependence Experiment" from inventory.
+        This creates two butterflies in exactly the same position, one
+        listening on /4001 that starts flying at 20% of the way between
+        the critical points and a second listening on /4002 that starts
+        at 20.000002%, a difference of 100 parts per billion in initial
+        conditions.
+    /4002 channel 4001
+        This sets the second butterfly to also listen to channel 4001,
+        so both will respond to commands on that channel.
+    /4001 run on
+        Both butterflies start flying, apparently in lockstep.  But the
+        tiny difference in their initial positions is being amplified by
+        the chaotic Lorenz system as they fly, and around 100 seconds
+        into the run you'll see their paths begin to visibly diverge.
+        Shortly thereafter, they'll be following completely different
+        trajectories, often orbiting different critical points.
+    /4001 run off
+    /4001 boot
+        Stop the run and reboot the two butterflies.  They will resume
+        listening on channels 4001 and 4002.
+    /4002 set start 20
+        Change the starting position of butterfly 2 to 20%, precisely
+        the same as butterfly 1.
+    /4002 channel 4001
+        Reset butterfly 2 to listen to the same channel as butterfly 1.
+    /4001 run on
+        Start the butterflies flying again.  This time, having
+        eliminated the 100 parts per billion difference in initial
+        conditions, they will track perfectly, as the evolution of the
+        Lorenz system is deterministic.  After a while, you may notice
+        that one butterfly is getting a little ahead of the other along
+        their trajectory.  This is due to the Second Life simulator not
+        updating these two independent objects at precisely the same
+        rate.  But you will notice they are following exactly the same
+        trajectory because their starting points were identical.  I
+        have let this run overnight, and the two butterflies never
+        diverged onto radically different trajectories.
+    /4001 run off
+    /4001 boot
+        This concludes the experiment.  You may now, if you wish,
+        continue the experiment at the step above where we set the
+        starting position of /4002 and try different starting positions
+        or changes in other parameters such as beta, rho, or sigma.
+        Bear in mind that floating point computation in Second Life is
+        single-precision only, which has around 7.2 significant digits,
+        so changes smaller than the 100 parts per billion used in the
+        example may not make any difference.
+The above appears in a new notecard, notecards/sensitive_dependence.nc
+which is included in the Sensitive Dependence folder of the product.
+
+The RIBBON particle system mask item was infelicitous when the
+butterfly was attached to an avatar because limitations in what we
+can make the avatar do from an attachment preclude aligning the Z
+axis of the butterfly with the direction of travel.  I added code to
+drawPaths() to select the ribbon when we are not attached and smaller
+dots when we are.
 
 
 
@@ -412,7 +543,6 @@ Notes and to-do:
      work as skeleton moves the attachment and link away from that.)
 
     * More than one run session with attached object.
-    * Reset command to restore initial settings
     * Offset of crit points when wearing
 
-    * Sensitive dependence example
+    * Investigate llMoveToTarget and target() event for fly

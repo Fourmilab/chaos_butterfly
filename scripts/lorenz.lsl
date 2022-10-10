@@ -127,13 +127,46 @@
                (id == llGetOwner());
     }
 
+    /*  flRezPermitted  --  Test whether we're allowed to create
+                            objects here.  Returns FALSE (0) if we
+                            can't use llRezObject() on this parcel
+                            and a positive value if we are permitted
+                            for the following reasons:
+                              1   Anybody can create objects here
+                              2   User is owner of this parcel
+                              4   User is in the same group as this
+                                  parcel and the parcel permits
+                                  group members to create objects
+                            The status codes are returned in the order
+                            listed, but are defined to permit them to
+                            be bit-coded (at the cost of a little speed)
+                            should that be desired in the future.  */
+
+    integer flRezPermitted(vector here) {
+        integer pflags = llGetParcelFlags(here);
+        if (pflags & PARCEL_FLAG_ALLOW_CREATE_OBJECTS) {
+            return 1;       // Anybody can create objects here
+        }
+        list pdet = llGetParcelDetails(here,
+            [ PARCEL_DETAILS_OWNER, PARCEL_DETAILS_GROUP ]);
+        if (llList2Key(pdet, 0) == llGetOwner()) {
+            return 2;       // User is owner of the parcel
+        }
+        if (llSameGroup(llList2Key(pdet, 1))) {
+            if (pflags && PARCEL_FLAG_ALLOW_CREATE_GROUP_OBJECTS) {
+                return 4;   // User is in group, parcel allows create
+            }
+        }
+        return FALSE;
+    }
+
     //  sendSettings  --  Send settings to other scripts
 
     sendSettings() {
         llMessageLinked(LINK_THIS, LM_SP_SETTINGS,
-            llList2CSV([ trace, echo ]), whoDat);
+            llList2CSV([ trace & 1, echo ]), whoDat);
         llMessageLinked(LINK_THIS, LM_MP_SETTINGS,
-            llList2CSV([ trace, echo ]), whoDat);
+            llList2CSV([ trace & 1, echo ]), whoDat);
     }
 
     /*  scriptResume  --  Resume script execution when asynchronous
@@ -144,7 +177,7 @@
             if (scriptSuspend) {
                 scriptSuspend = FALSE;
                 llMessageLinked(LINK_THIS, LM_SP_GET, "", NULL_KEY);
-                if (trace) {
+                if (trace & 1) {
                     tawk("Script resumed.");
                 }
             }
@@ -395,16 +428,26 @@ llOwnerSay("Blooie!  " + (string) hsv);
 
     drawPaths() {
         if (paths && running) {
-            llLinkParticleSystem(LINK_THIS,
-                [ PSYS_PART_FLAGS, PSYS_PART_EMISSIVE_MASK | PSYS_PART_RIBBON_MASK,
-                  PSYS_SRC_PATTERN, PSYS_SRC_PATTERN_DROP,
-                  PSYS_PART_START_SCALE, <1, 1, 1> * pathWidth,
+            list particleSys =
+                [ PSYS_SRC_PATTERN, PSYS_SRC_PATTERN_DROP,
                   PSYS_PART_START_COLOR, pathSetColour(),
                   PSYS_PART_START_ALPHA, 1,
                   PSYS_PART_END_ALPHA, 1,
                   PSYS_PART_MAX_AGE, 30.0,
                   PSYS_SRC_BURST_PART_COUNT, 2048,
-                  PSYS_SRC_BURST_RATE, 0.0 ]);
+                  PSYS_SRC_BURST_RATE, 0.0 ];
+            if (attached) {
+                particleSys +=[
+                    PSYS_PART_FLAGS, PSYS_PART_EMISSIVE_MASK,
+                    PSYS_PART_START_SCALE, <0.1, 0.1, 0.1> * pathWidth
+                ];
+            } else {
+                particleSys +=[
+                    PSYS_PART_FLAGS, PSYS_PART_EMISSIVE_MASK | PSYS_PART_RIBBON_MASK,
+                    PSYS_PART_START_SCALE, <1, 1, 1> * pathWidth
+                ];
+            }
+            llLinkParticleSystem(LINK_THIS, particleSys);
         } else {
             llLinkParticleSystem(LINK_THIS, [ ]);
         }
@@ -576,6 +619,16 @@ llOwnerSay("Blooie!  " + (string) hsv);
         } else if (abbrP(command, "li")) {
             tawk((string) llGetPos() + "  Run: " + eOnOff(running));
 
+        //  Reset                   Reset model parameters to defaults
+
+        } else if (abbrP(command, "re")) {
+            lorSigma = 10;                  // Prandtl number
+            lorRho = 28;                    // Reynolds number
+            lorBeta = 2.666666;             // 8/3  Layer dimensions
+            lorDt = 0.01;                   // Integration step time
+            globalScale = 0.125;            // Global scale factor
+            updateScale();
+
         //  Run on/off/time/async   Start / stop simulation
 
         } else if (abbrP(command, "ru")) {
@@ -596,16 +649,18 @@ llOwnerSay("Blooie!  " + (string) hsv);
             if (running) {
                 //  Run on
                 if (attached) {
-                    if (llGetAgentInfo(wearer) & AGENT_FLYING) {
+//                    if (TRUE) { // llGetAgentInfo(wearer) & AGENT_FLYING) {
                         list pr = llGetObjectDetails(llGetOwnerKey(llGetKey()),
                             [ OBJECT_POS, OBJECT_ROT ]);
                         savePos = llList2Vector(pr, 0);
                         saveRot = llList2Rot(pr, 1);
-                    } else {
+llRequestPermissions(whoDat, PERMISSION_OVERRIDE_ANIMATIONS);
+/*                    } else {
                         tawk("Please start flying before Run.");
                         running = FALSE;
                         return FALSE;
                     }
+*/
                 } else {
                     savePos = llGetPos();
                     saveRot = llGetRot();
@@ -630,8 +685,13 @@ llOwnerSay("Blooie!  " + (string) hsv);
                 if (attached) {
                     llMoveToTarget(savePos, 0.05);
                     llSetRot(attachRot);
-                    llSleep(0.25);
+//                    llSleep(0.25);
+llSleep(1.5);
+//tawk("Stop move to target.");
                     llStopMoveToTarget();
+llResetAnimationOverride("Falling Down");
+//llStopLookAt();
+//llSetRot(attachRot);
                 } else {
                     llSetPos(savePos);
                     llSetRot(saveRot);
@@ -694,10 +754,14 @@ llOwnerSay("Blooie!  " + (string) hsv);
                             return TRUE;
                         }
                     }
-                    flPlotPerm = abbrP(larg, "pe");
-                    trails = TRUE;
-                    paths = FALSE;
-                    drawPaths();
+                    if (flRezPermitted(llGetPos()) > 0) {
+                        flPlotPerm = abbrP(larg, "pe");
+                        trails = TRUE;
+                        paths = FALSE;
+                        drawPaths();
+                    } else {
+                        tawk("Cannot create objects here for path lines.");
+                    }
                 } else if (abbrP(svalue, "co")) {
                     //  Set path colour <r, g, b>
                     string colarg = llList2String(args, 3);
@@ -785,7 +849,7 @@ llOwnerSay("Blooie!  " + (string) hsv);
                     llSetTimerEvent(tick);
                 }
 
-            //  Set trace on/off
+            //  Set trace on/off/value
 
             } else if (abbrP(sparam, "tr")) {
                 if (flIsDigit(svalue)) {
@@ -820,7 +884,7 @@ llOwnerSay("Blooie!  " + (string) hsv);
             string s;
             s += "Sigma: " + (string) lorSigma + "  Rho: " + (string) lorRho +
                  "  Beta: " + (string) lorBeta + "  deltaT: " + (string) lorDt + "\n";
-            s += "Trace: " + eOnOff(trace) + "  Echo: " + eOnOff(echo) + "\n";
+            s += "Trace: " + (string) trace + "  Echo: " + eOnOff(echo) + "\n";
             s += "Running: " + eOnOff(running) + "  Tick: " + (string) tick +
                  "  Scale: " + (string) globalScale;
             s += "  Line plotters: " + (string) linePlotters +
@@ -866,7 +930,7 @@ llOwnerSay("Blooie!  " + (string) hsv);
         float z = lorRho - 1;
         critp1 = < xy, xy, z >;
         critp2 = < -xy, -xy, z >;
-        if (trace) {
+        if (trace & 2) {
             tawk("Critical points " + (string) critp1 + " " + (string) critp2);
         }
     }
@@ -895,7 +959,7 @@ llOwnerSay("Blooie!  " + (string) hsv);
                 foundI = i;
             }
         }
-        if (trace) {
+        if (trace & 2) {
             tawk("Max excursion " + (string) maxExcursion +
                  " found at step " + (string) foundI);
         }
@@ -909,7 +973,10 @@ llOwnerSay("Blooie!  " + (string) hsv);
     //  lorenz2Region  --  Convert Lorenz co-ordinates to region
 
     vector lorenz2Region(vector lor) {
-        rotation unRot = llEuler2Rot(<-90, 0, 0>) * saveRot;
+        rotation unRot = llEuler2Rot(<-PI_BY_TWO, 0, 0>) * saveRot;
+if (attached) {
+    unRot = saveRot;
+}
         return savePos + ((lor * globalScale) * unRot) + regionOffset;
     }
 
@@ -1098,6 +1165,12 @@ commandChannel = 111;       // Use different channel for attachment when testing
             }
         }
 
+run_time_permissions(integer perms) {
+    if (perms & PERMISSION_OVERRIDE_ANIMATIONS) {
+        llSetAnimationOverride("Falling Down", "fly");
+    }
+}
+
         timer() {
             lorIterate();
             vector lRegPoint = regPoint;
@@ -1114,8 +1187,9 @@ commandChannel = 111;       // Use different channel for attachment when testing
             vector look = llVecNorm(closeCp - regPoint);
             //  Rotation to align local Z with direction of flight
             rotation vdir = flRotBetween(<0, 0, 1>, -flight);
-            integer permx = trace >= 4;
-            if (trace >= 3) {
+/*
+            integer permx = trace & 8;
+            if (trace & 4) {
                 //  Plot model orientation vectors
                 plotLine(regPoint, regPoint + (llRot2Fwd(vdir) * 0.3),
                          <1, 0, 0>, fuisWid, permx);    // Model right, Red
@@ -1128,14 +1202,17 @@ commandChannel = 111;       // Use different channel for attachment when testing
                 plotLine(regPoint, closeCp, <1, 1, 0>,
                          fuisWid, permx);   // Model to nearest crit, Yellow
             }
+*/
             //  Projection of look vector into plane of object rotation
             vector up = llRot2Up(vdir);
             vector lproj = look - ((look * up) * up);
-            if (trace >= 3) {
+/*
+            if (trace & 4) {
                 //  Look projection into rotation plane, Magenta
                 plotLine(regPoint, regPoint + (lproj * 0.3), <1, 0, 1>,
                     fuisWid, permx);
             }
+*/
             //  Rotation to align our local left (actually up in model) with critical point
             vector left = llRot2Left(vdir);
             float zAxRot = llAcos(lproj * left);
@@ -1143,10 +1220,12 @@ commandChannel = 111;       // Use different channel for attachment when testing
             vector nUpLproj = up % lproj;
             //  Sign indicates which way we need to rotate
             float rotSign = nUpLproj * left;
-            if (trace >= 3) {
+/*
+            if (trace & 4) {
                 tawk("Z rot " + (string) (zAxRot * RAD_TO_DEG) +
                      " rotSign " + (string) rotSign);
             }
+*/
             /*  Rotate model around the axis of its travel so its local
                 up vector faces toward the closest criticial point.  */
             if (rotSign >= 0) {
@@ -1157,6 +1236,15 @@ commandChannel = 111;       // Use different channel for attachment when testing
 
             if (attached) {
                 llMoveToTarget(regPoint, 0.05);
+/*
+llSetLinkPrimitiveParamsFast(LINK_THIS,
+    [
+//      PRIM_ROT_LOCAL, vdir / llList2Rot(llGetLinkPrimitiveParams(LINK_ROOT, [ PRIM_ROT_LOCAL ]), 0)
+PRIM_ROT_LOCAL, llList2Rot(llGetLinkPrimitiveParams(LINK_ROOT, [ PRIM_ROT_LOCAL ]), 0)
+    ]);
+
+//llLookAt(llRot2Fwd(vdir) / llGetRootRotation(), 3, 1);
+*/
             } else {
                 llSetLinkPrimitiveParamsFast(LINK_THIS,
                     [ PRIM_POSITION, regPoint,

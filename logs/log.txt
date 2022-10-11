@@ -534,6 +534,41 @@ axis of the butterfly with the direction of travel.  I added code to
 drawPaths() to select the ribbon when we are not attached and smaller
 dots when we are.
 
+2022 October 11
+
+Ran an experiment to see what would happen if an avatar wearing the
+butterfly and flying teleported while flying.  After arrival, they are
+no longer flying but the butterfly thinks it's in Run on mode. You have
+to Run off and then Run on again to resume flying.  This can probably
+be fixed by detecting the changed() region event and forcing a Run off
+if we're running.  You also get CHANGED_REGION when crossing a region
+boundary by simply moving, so I need to see what that does with Run
+mode as well.
+
+Logged on to github.com.
+
+Created a new repository:
+    chaos_butterfly
+with access URLs:
+    HTTPS: https://github.com/Fourmilab/chaos_butterfly.git
+    SSH:   git@github.com:Fourmilab/chaos_butterfly.git
+
+Linked the local repository to the GitHub archive:
+    git remote add origin git@github.com:Fourmilab/chaos_butterfly.git
+
+Confirmed that my local "git sync" command works with the remote
+repository.
+
+
+
+Music:
+    Butterfly – Hunter Milo
+        https://www.youtube.com/watch?v=20r5bdJOZsI
+
+    Fly away – Rexlambo
+        https://www.youtube.com/watch?v=wbO_JnJTo_Q
+
+
 
 
 Notes and to-do:

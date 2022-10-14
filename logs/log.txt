@@ -559,16 +559,69 @@ Linked the local repository to the GitHub archive:
 Confirmed that my local "git sync" command works with the remote
 repository.
 
+2022 October 13
 
+Music for the YouTube video:
 
-Music:
-    Butterfly – Hunter Milo
-        https://www.youtube.com/watch?v=20r5bdJOZsI
+            music1.ogg
+––––––––––––––––––––––––––––––
+Fly away by Rexlambo https://soundcloud.com/rexlambo
+Creative Commons — Attribution 3.0 Unported — CC BY 3.0
+Free Download / Stream: http://bit.ly/l-fly-away
+Music promoted by Audio Library https://youtu.be/wbO_JnJTo_Q
+––––––––––––––––––––––––––––––
 
-    Fly away – Rexlambo
-        https://www.youtube.com/watch?v=wbO_JnJTo_Q
+––––––––––––––––––––––––––––––
+Butterfly by Hunter Milo https://soundcloud.com/huntermilo
+Creative Commons — Attribution 3.0 Unported — CC BY 3.0
+Free Download / Stream:  https://bit.ly/3RJG2rz
+Music promoted by Audio Library https://youtu.be/20r5bdJOZsI
+––––––––––––––––––––––––––––––
 
+            music2.ogg
+––––––––––––––––––––––––––––––
+Track: Infinity — Declan DP [Audio Library Release]
+Music provided by Audio Library Plus
+Watch: https://youtu.be/QV-5aZhWo5w
+Free Download / Stream: https://alplus.io/infinity
+––––––––––––––––––––––––––––––
 
+            music3.ogg
+––––––––––––––––––––––––––––––
+Track: Back to 1981 — Iaio [Audio Library Release]
+Music provided by Audio Library Plus
+Watch: https://youtu.be/3MVRIfyWlnA
+Free Download / Stream: https://alplus.io/back-1981
+––––––––––––––––––––––––––––––
+
+            music4.ogg
+––––––––––––––––––––––––––––––
+Track: Altitude — Declan DP [Audio Library Release]
+Music provided by Audio Library Plus
+Watch: https://youtu.be/sKqpyBn7jCM
+Free Download / Stream: https://alplus.io/altitude
+––––––––––––––––––––––––––––––
+
+            music5.ogg
+––––––––––––––––––––––––––––––
+Skydancer by Scandinavianz https://soundcloud.com/scandinavianz
+Creative Commons — Attribution 3.0 Unported — CC BY 3.0
+Free Download / Stream: https://bit.ly/_skydancer
+Music promoted by Audio Library https://youtu.be/Kp-eibuQpWg
+––––––––––––––––––––––––––––––
+
+2022 October 14
+
+After any number of false starts due to problems with video clip
+transitions, posted the demonstration video to YouTube:
+    https://www.youtube.com/watch?v=bKa171nw3eA
+
+Added the video link to the User Guide notecard.
+
+Added the video link to the README.md for GitHub.
+
+Added the video link to the Second Life Marketplace listing:
+    https://marketplace.secondlife.com/p/Fourmilab-Chaos-Butterfly/24053377
 
 
 Notes and to-do:

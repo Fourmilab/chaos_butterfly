@@ -30,7 +30,7 @@ copy, modify, and transfer it to other users within Second Life.
 
 ![Fourmilab Chaos Butterfly](marketplace/images/cbfly03.png)
 
-A [video demonstration](https://www.youtube.com/watch?v=TBA)
+A [video demonstration](https://www.youtube.com/watch?v=bKa171nw3eA)
 is available on YouTube.
 
 All of this software is licensed under the Creative Commons

@@ -30,7 +30,7 @@ makes it easy to hatch as many butterflies as you wish, each of which
 will wheel and gyre through the sky of your simulation.
 
 A demonstration of the model and features may be viewed on YouTube at:
-    https://www.youtube.com/watch?v=TBA
+    https://www.youtube.com/watch?v=bKa171nw3eA
 
 REZZING CHAOS BUTTERFLY IN-WORLD
 

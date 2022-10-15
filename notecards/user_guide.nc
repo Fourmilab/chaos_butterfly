@@ -61,7 +61,7 @@ WEARING THE BUTTERFLY
 If you want to fly with the butterfly in an area where you are not
 allowed to create (“rez”) objects, you can wear it as an avatar
 accessory by selecting it in your inventory and using “Add to outfit”
-or “Attach to spine”.  The butterfly will appear on your back like a
+or “Attach to chest”.  The butterfly will appear on your back like a
 set of angel wings and you may then have your avatar start to fly,
 activate the butterfly, and fly along with it.  When worn as an avatar
 accessory, the butterfly has no land impact.
@@ -216,10 +216,10 @@ and lower case.)
             within curly brackets.  Names are case-insensitive, but
             values are case-sensitive and may contain spaces.  For
             example, in a menu you might define a button:
-                menu button "Rotate" "rotate {plane} {sign}{ang}" "menu show Rot"
+                menu button "Set rho" "set rho {rho}" "menu show Params"
             where the macros can be changed by other buttons in the
             menu, for example:
-                menu button "XY" "script set plane xy" "menu show Rot"
+                menu button "Rho 15" "script set rho 15" "menu show Params"
 
         Script set name
             Deletes a macro with the specified name.  Macros remain
@@ -233,44 +233,41 @@ and lower case.)
         Script set
             Lists all defined macros and their values.
 
-            The following commands may be used only within scripts or
-            commands defined for Menu buttons.
+        The following commands may be used only within scripts or
+        commands defined for Menu buttons.
 
-            Script loop [ n ]
-                Begin a loop within the script which will be executed n
-                times, or forever if n is omitted.  Loops may be
-                nested, and scripts may run other scripts within loops.
-                An infinite loop can be terminated by “Script run” with
-                no script name or by the “Boot” command.
+        Script loop [ n ]
+            Begin a loop within the script which will be executed n
+            times, or forever if n is omitted.  Loops may be nested,
+            and scripts may run other scripts within loops.  An
+            infinite loop can be terminated by “Script run” with no
+            script name or by the “Boot” command.
 
-            Script end
-                Marks the end of a “Script loop”.  If the number of
-                iterations has been reached, proceeds to the next
-                command.  Otherwise, repeats, starting at the top of
-                the loop.
+        Script end
+            Marks the end of a “Script loop”.  If the number of
+            iterations has been reached, proceeds to the next command.
+            Otherwise, repeats, starting at the top of the loop.
 
-            Script pause [ n/touch/region ]
-                Pauses execution of the script for n seconds.  If the
-                argument is omitted, the script is paused for one
-                second.  If “touch” is specified, the script will be
-                paused until the object is touched or a “Script resume”
-                command is entered from chat.  Specifying “region”
-                resumes the script when the object enters a new region,
-                which can only occur if you happen to be wearing it as
-                an attachment, which is a pretty odd thing to do.
+        Script pause [ n/touch/region ]
+            Pauses execution of the script for n seconds.  If the
+            argument is omitted, the script is paused for one second.
+            If “touch” is specified, the script will be paused until
+            the object is touched or a “Script resume” command is
+            entered from chat.  Specifying “region” resumes the script
+            when the object enters a new region.
 
-            Script wait n[unit] [ offset[unit] ]
-                Pause the script until the start of the next n units of
-                time, where unit may be “s”=seconds, “m”=minutes,
-                “h“=hours, or ”d”=days, plus the offset time, similarly
-                specified.  This can be used in loops to periodically
-                run shows at specified intervals.  For example, the
-                following script runs a five minute show once an hour
-                at 15 minutes after the hour.
-                    Script loop
-                        Script wait 1h 15m
-                        Script run MyHourlyShow
-                    Script end
+        Script wait n[unit] [ offset[unit] ]
+            Pause the script until the start of the next n units of
+            time, where unit may be “s”=seconds, “m”=minutes,
+            “h“=hours, or ”d”=days, plus the offset time, similarly
+            specified.  This can be used in loops to periodically
+            run shows at specified intervals.  For example, the
+            following script runs a five minute show once an hour
+            at 15 minutes after the hour.
+                Script loop
+                    Script wait 1h 15m
+                    Script run MyHourlyShow
+                Script end
 
     Set
         Set a variety of parameters.
@@ -279,8 +276,8 @@ and lower case.)
             Sets the beta (β) factor of the Lorenz system to the given
             value, which may be specified either as a decimal number or
             a rational fraction such as “8/3”.  This sets the geometric
-            scale of the system, and the default value of 8/3 (2.666…)
-            is that studied by Lorenz in his original paper.
+            scale of the system, with the default value of 8/3
+            (2.666…), that studied by Lorenz in his original paper.
 
         Set critical [ permanent ]
             Displays the two critical points of the Lorenz system as
@@ -288,12 +285,12 @@ and lower case.)
             points of the system (a point at located there stays there)
             and act to repel a trajectory as it approaches but attract
             it from a distance.  The critical points are given by:
-                (±sqrt(β(ρ -1)), ±sqrt(β(ρ -1)), ρ - 1)
+                <±sqrt(β(ρ -1)), ±sqrt(β(ρ -1)), ρ - 1>
             The critical points are normally drawn with temporary prims
             which will disappear on the next garbage collection
             (usually after around a minute).  If you specify
             “permanent”, they will be drawn with permanent prims, which
-            will cost you six land impact as long as they remain
+            will cost you six land impact units as long as they remain
             around.  You can delete the critical point markers with the
             “Set path lines clear” command.
 
@@ -311,13 +308,15 @@ and lower case.)
 
         Set echo on/off
             Controls whether commands entered from local chat or a
-            script are echoed to local chat as they are executed.
+            script are echoed to local chat as they are executed.  You
+            can cause individual script commands not to be echoed
+            regardless of this setting by prefixing them with “@”.
 
         Set offset <x, y, z>
             To give the simulation room to evolve without colliding
             with the ground or other objects, it normally runs up in
             the air above where it was started.  This sets the offset,
-            as <x, y, z> region co-ordinates from where the butterfly
+            as <x, y, z> region co-ordinates, from where the butterfly
             was when the “Run” command was issued.  The default is
             <0, 0, 4>, which displaces the trajectory four metres above
             the start point.  Set this as you wish, according to where
@@ -332,7 +331,7 @@ and lower case.)
             mechanism, which doesn't look all that great but it's
             lightweight and doesn't slow down the simulation.  If you
             specify “Set path lines”, temporary thin cylinder prims
-            will be left behind by the butterfly, tracing the path.
+            will be left behind by the butterfly, tracing its path.
             This draws a very clear path but, as it involves creating
             numerous new objects, can slow the simulation. The path
             objects are automatically cleaned up by the Second Life
@@ -364,12 +363,12 @@ and lower case.)
             transport by diffusion to transport by convection.  This
             parameter has the most dramatic effect upon the behaviour
             of the Lorenz system.  When rho is less than 1, the system
-            has a single fixed point at the origin, which all
-            trajectories converge upon.  Greater than 1, critical
-            points appear at the locations described above for “Set
-            critical” and trajectories become increasingly chaotic as
-            the value increases.  The default value is 28, that studied
-            by Lorenz.
+            has a single fixed point at the origin, upon which all
+            trajectories converge.  Greater than 1, critical points
+            appear at the locations described above for “Set critical”
+            and trajectories become increasingly chaotic as the value
+            increases.  The default value is 28, that studied by
+            Lorenz.
 
         Set scale n
             Sets the scale factor from the values of the co-ordinates
@@ -411,9 +410,9 @@ and lower case.)
         Set tick n
             Sets the time in seconds between animation steps when the
             Run command is active.  For smooth animation, try a setting
-            of 0.1 (a tenth of a second) or a little smaller.  The
-            default is 0.01, which makes the simulation run about as
-            fast as the simulator can handle it.
+            of 0.1 (a tenth of a second) or less.  The default is 0.01,
+            which makes the simulation run about as fast as the
+            simulator can evaluate it.
 
         Set trace on/off
             Enable or disable output, sent to the owner on local chat,
@@ -462,7 +461,7 @@ USING THE BUTTERFLY DEPLOYER
 
 The Butterfly Deployer, included with the product, lets you
 automatically place any number of butterflies (limited only by the prim
-capacity of the parcel where you're creating them) at randomly
+capacity of the parcel where you're creating them) at randomly chosen
 locations and orientations.  This is a great way to set up areas where
 butterflies romp in the sky above visitors.  Rez the Butterfly
 Deployer, which appears as a blue cylinder with a butterfly on the top,
@@ -471,13 +470,15 @@ commercial butterfly farm was established in Guernsey).
 
 It accepts commands as follows:
     deploy n_butterfly radius hmin hmax texture distribution
-        Place sites where values are as follows, with defaults in
+        Place butterflies where values are as follows, with defaults in
         parentheses:
             n_butterfly     Number of butterflies to place
             hmin            Minimum height (0.1) m
             hmax            Maximum height (5) m
-            texture         Texture index, 0 for random (0)
-            distribution    Distribution of sites: (Uniform)
+            texture         Texture index, 0 for random (0).  The
+                            texture index is as listed by the “Set
+                            texture” command of the butterfly.
+            distribution    Distribution of butterflies: (Uniform)
                                 Uniform
                                 Gaussian    Bell curve around centre
                                 Igaussian   Inverse bell curve, sparse at centre

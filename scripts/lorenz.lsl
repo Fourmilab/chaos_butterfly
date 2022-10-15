@@ -6,8 +6,8 @@
 
     key owner;                          // Owner UUID
 
-    integer commandChannel = 11;/*1963*/        /* Command channel in chat (year Edward
-                                           Lorenz published "Deterministic Nonperiodic Flow") */
+    integer commandChannel = 1963;      /* Command channel in chat (year Edward Lorenz
+                                           published "Deterministic Nonperiodic Flow") */
     integer commandH;                   // Handle for command channel
     integer deployerIndex;              // Object index from deployer
     key deployerKey;                    // Deployer's key
@@ -283,7 +283,7 @@
         } else if (i == 5) {
             return < v, p, q >;
         }
-llOwnerSay("Blooie!  " + (string) hsv);
+//llOwnerSay("Blooie!  " + (string) hsv);
         return < 0, 0, 0 >;
     }
 
@@ -649,18 +649,11 @@ llOwnerSay("Blooie!  " + (string) hsv);
             if (running) {
                 //  Run on
                 if (attached) {
-//                    if (TRUE) { // llGetAgentInfo(wearer) & AGENT_FLYING) {
-                        list pr = llGetObjectDetails(llGetOwnerKey(llGetKey()),
-                            [ OBJECT_POS, OBJECT_ROT ]);
-                        savePos = llList2Vector(pr, 0);
-                        saveRot = llList2Rot(pr, 1);
-llRequestPermissions(whoDat, PERMISSION_OVERRIDE_ANIMATIONS);
-/*                    } else {
-                        tawk("Please start flying before Run.");
-                        running = FALSE;
-                        return FALSE;
-                    }
-*/
+                    list pr = llGetObjectDetails(llGetOwnerKey(llGetKey()),
+                        [ OBJECT_POS, OBJECT_ROT ]);
+                    savePos = llList2Vector(pr, 0);
+                    saveRot = llList2Rot(pr, 1);
+                    llRequestPermissions(whoDat, PERMISSION_OVERRIDE_ANIMATIONS);
                 } else {
                     savePos = llGetPos();
                     saveRot = llGetRot();
@@ -685,13 +678,10 @@ llRequestPermissions(whoDat, PERMISSION_OVERRIDE_ANIMATIONS);
                 if (attached) {
                     llMoveToTarget(savePos, 0.05);
                     llSetRot(attachRot);
-//                    llSleep(0.25);
-llSleep(1.5);
-//tawk("Stop move to target.");
+                    //  Have to wait for llMovetoTarget() to arrive
+                    llSleep(1.5);
                     llStopMoveToTarget();
-llResetAnimationOverride("Falling Down");
-//llStopLookAt();
-//llSetRot(attachRot);
+                    llResetAnimationOverride("Falling Down");
                 } else {
                     llSetPos(savePos);
                     llSetRot(saveRot);
@@ -967,16 +957,15 @@ llResetAnimationOverride("Falling Down");
         //  Compute critical point locations in region co-ordinates
         rcritp1 = lorenz2Region(critp1);
         rcritp2 = lorenz2Region(critp2);
-//tawk("Region critical points " + (string) rcritp1 + " " + (string) rcritp2);
     }
 
     //  lorenz2Region  --  Convert Lorenz co-ordinates to region
 
     vector lorenz2Region(vector lor) {
         rotation unRot = llEuler2Rot(<-PI_BY_TWO, 0, 0>) * saveRot;
-if (attached) {
-    unRot = saveRot;
-}
+        if (attached) {
+            unRot = saveRot;
+        }
         return savePos + ((lor * globalScale) * unRot) + regionOffset;
     }
 
@@ -985,7 +974,6 @@ if (attached) {
     initState() {
         whoDat = owner = llGetOwner();
         savePos = llGetPos();
-//tawk("Pos " + (string) savePos + "  Rot " + (string) (llRot2Euler(llGetRot()) * RAD_TO_DEG));
 
         //  Reset the script and menu processors
         llMessageLinked(LINK_THIS, LM_SP_RESET, "", whoDat);
@@ -1088,7 +1076,6 @@ commandChannel = 111;       // Use different channel for attachment when testing
                         }
                     }
                 }
-//tawk("Using texture " + (string) deployerTex + " " + deployerTexture);
                 processCommand(owner, "@se te " + deployerTexture, TRUE);
             }
         }
@@ -1165,11 +1152,12 @@ commandChannel = 111;       // Use different channel for attachment when testing
             }
         }
 
-run_time_permissions(integer perms) {
-    if (perms & PERMISSION_OVERRIDE_ANIMATIONS) {
-        llSetAnimationOverride("Falling Down", "fly");
-    }
-}
+        run_time_permissions(integer perms) {
+            if (perms & PERMISSION_OVERRIDE_ANIMATIONS) {
+                //  Set flying animation when attachment takes off
+                llSetAnimationOverride("Falling Down", "fly");
+            }
+        }
 
         timer() {
             lorIterate();
@@ -1236,15 +1224,6 @@ run_time_permissions(integer perms) {
 
             if (attached) {
                 llMoveToTarget(regPoint, 0.05);
-/*
-llSetLinkPrimitiveParamsFast(LINK_THIS,
-    [
-//      PRIM_ROT_LOCAL, vdir / llList2Rot(llGetLinkPrimitiveParams(LINK_ROOT, [ PRIM_ROT_LOCAL ]), 0)
-PRIM_ROT_LOCAL, llList2Rot(llGetLinkPrimitiveParams(LINK_ROOT, [ PRIM_ROT_LOCAL ]), 0)
-    ]);
-
-//llLookAt(llRot2Fwd(vdir) / llGetRootRotation(), 3, 1);
-*/
             } else {
                 llSetLinkPrimitiveParamsFast(LINK_THIS,
                     [ PRIM_POSITION, regPoint,

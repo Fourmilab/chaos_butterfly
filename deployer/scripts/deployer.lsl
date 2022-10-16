@@ -17,7 +17,7 @@
 
     float REGION_SIZE = 256;            // Size of regions
 
-    integer siteChannel = 1011;         // Channel for communicating with butterflies
+    integer siteChannel = 2963;         // Channel for communicating with butterflies
     string ypres = "n?+:$$";            // It's pronounced "Wipers"
 
     integer siteIndex = 0;              // Index of last site deployed
@@ -336,7 +336,7 @@
 
 //llOwnerSay("Deploy " + (string) siteno + " at " + (string) where + " sparam " + (string) sparam + "  pos " + (string) pos);
         llSetRegionPos(where);
-        llRezObject("Chaos Butterfly", where, ZERO_VECTOR,
+        llRezObject("Fourmilab Chaos Butterfly", where, ZERO_VECTOR,
             llEuler2Rot(< PI_BY_TWO, 0, 0 >) *
             llEuler2Rot(< 0, 0, llFrand(TWO_PI) >), sparam);
         llSetRegionPos(pos);

@@ -1,7 +1,7 @@
 
 #   Fourmilab Chaos Butterfly Demonstration Script
 
-script set segment "15"
+script set segment "45"
 script set texture "5"
 
 @echo Lorenz attractor with line trail, critical points shown
@@ -60,5 +60,11 @@ set texture falcon
 @echo Wait!  That's not a butterfly!
 script pause {texture}
 set texture butterfly10
+script pause {texture}
 
-
+@echo
+@echo This concludes the demonstration.  To explore further,
+@echo see the Fourmilab Chaos Butterfly User Guide which
+@echo you can obtain with /1963 help.  Also, see the YouTube
+@echo demonstration video:
+@echo     https://www.youtube.com/watch?v=bKa171nw3eA

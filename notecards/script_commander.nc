@@ -3,12 +3,42 @@ set echo off
 #  Main
 
 menu begin Main "Choose command family menu"
-menu button Model "menu show Model"
-menu button Texture "menu show Texture"
 menu button Run "menu show Run"
-menu button Settings "menu show Settings"
+menu button Parameters "menu show Parameters"
+menu button Texture "menu show Texture"
+menu button Demonstration "script run Demonstration" "menu show Main"
 menu button Exit
 menu button "*Timeout*" "echo Menu timed out."
+menu end
+
+#   Run
+
+menu begin Run "Run the simulation"
+menu button "Run" "run asynchronous" "menu show Run"
+menu button "Stop" "run off" "menu show Run"
+menu button "Path trail" "set path on" "menu show Run"
+menu button "Path lines" "set path lines" "menu show Run"
+menu button "Path off" "set path off" "set path lines clear" "menu show Run"
+menu button "Mark critical" "set critical" "menu show Run"
+menu button Main "menu show Main"
+menu button "*Timeout*" "echo Menu timed out."
+menu end
+
+#   Parameters
+
+menu begin Parameters "Set model parameters, * = defaults"
+menu button "Rho 16" "set rho 16" "menu show Parameters"
+menu button "Rho 28 *" "set rho 28" "menu show Parameters"
+menu button "Rho 36" "set rho 36" "menu show Parameters"
+menu button "Sigma 5" "set sigma 5" "menu show Parameters"
+menu button "Sigma 10 *" "set sigma 10" "menu show Parameters"
+menu button "Sigma 20" "set sigma 20" "menu show Parameters"
+menu button "Beta 5/3" "set beta 5/3" "menu show Parameters"
+menu button "Beta 8/3 *" "set beta 8/3" "menu show Parameters"
+menu button "Beta 11/3" "set beta 11/3" "menu show Parameters"
+menu button "Run" "run async" "menu show Parameters"
+menu button "Stop" "run off" "menu show Parameters"
+menu button Main "Menu show Main"
 menu end
 
 #   Texture
@@ -28,52 +58,6 @@ menu button "Mill. Falcon" "set texture falcon" "menu show Texture"
 menu button Main "Menu show Main"
 menu button "*Timeout*" "echo Menu timed out."
 menu end
-
-#   Settings
-
-script set rate 5
-
-menu begin Settings "Model and simulation settings"
-menu button "Case on" "set case on" "menu show Settings"
-menu button "Case off" "set case off" "menu show Settings"
-menu button "Gravity -" "set gravity 0.05" "menu show Settings"
-menu button "Gravity 1" "set gravity 0.1" "menu show Settings"
-menu button "Gravity +" "set gravity 0.5" "menu show Settings"
-menu button Reset "rotate reset" "Menu show Settings "
-menu button "Run" "run async" "menu show Settings"
-menu button "Stop" "run off" "menu show Settings"
-menu button Main "Menu show Main"
-menu button "*Timeout*" "echo Menu timed out."
-menu end
-
-#   Model
-
-menu begin Model "Set model parameters"
-menu button "Standard" "reset" "menu show Model"
-menu button "Heavy bob 1" "set mass 1 200" "set mass 2 50" "menu show Model"
-menu button "Heavy bob 2" "set mass 1 50" "set mass 2 200" "menu show Model"
-menu button "Long rod 1" "set length 1 300" "set length 2 100" "menu show Model"
-menu button "Long rod 2" "set length 1 100" "set length 2 300" "menu show Model"
-menu button "Elevated" "set angle 1 1" "set angle 2 -1" "menu show Model"
-menu button "Lowered" "set angle 1 135" "set angle 2 -135" "menu show Model"
-menu button "Run" "run async" "menu show Model"
-menu button "Stop" "run off" "menu show Model"
-menu button Main "Menu show Main"
-menu end
-
-#   Run
-
-menu begin Run "Run the simulation"
-menu button "Run" "run asynchronous" "menu show Run"
-menu button "Stop" "run off" "menu show Run"
-menu button "Path trail" "set path on" "menu show Run"
-menu button "Path lines" "set path lines" "menu show Run"
-menu button "Path off" "set path off" "set path lines clear" "menu show Run"
-menu button "Mark critical" "set critical" "menu show Run"
-menu button Main "menu show Main"
-menu button "*Timeout*" "echo Menu timed out."
-menu end
-
 set echo on
 
 menu show Main

@@ -66,7 +66,7 @@
     vector regPoint;                    // Current position in region co-ordinates
 
     vector savePos;                     // Initial region position
-    rotation saveRot;                   // Initial rotation
+    rotation saveRot;                   // Initial region rotation
 
     //  Script processing
 
@@ -303,7 +303,7 @@
             +0 and -0.  While this does not preserve floating point
             numbers bit-for-bit, it doesn't make any difference in
             our calculations and is almost three times faster than
-            the original code above.  */
+            the original code.  */
         integer b = 0;
         if (a < 0) {
             b = 0x80000000;
@@ -420,7 +420,7 @@
                 dp1 = maxExcursion;
             }
             return hsv_to_rgb(< dp1 / maxExcursion, 1, 1 >);
-            }
+        }
         return pathColour;
     }
 
@@ -608,7 +608,7 @@
         } else if (abbrP(command, "he")) {
             llGiveInventory(id, helpFileName);      // Give requester the User Guide notecard
 
-        //  Kaboom                  Flight termination system activate
+        //  Kaboom                  Activate flight termination system
 
         } else if ((id == deployerKey) &&
                    (command == kaboom) && (sparam == kaboom)) {
@@ -700,7 +700,7 @@
                 lorBeta = ratParam(svalue, 2.666666);
                 updateScale();
 
-            //  Set crit [ perm ]
+            //  Set critical [ permanent ]
 
             } else if (abbrP(sparam, "cr")) {
                 if (!running) {
@@ -1002,7 +1002,6 @@
         llSetLinkCamera(LINK_THIS, dCAM_OFFSET, dCAM_ANG);
 
         if (llGetAttached() != 0) {
-commandChannel = 111;       // Use different channel for attachment when testing
             attachMe(llGetOwnerKey(llGetKey()));
             llStopMoveToTarget();
         }
@@ -1045,6 +1044,7 @@ commandChannel = 111;       // Use different channel for attachment when testing
                 initState();
                 deployerKey = llList2Key(llGetObjectDetails(llGetKey(),
                                          [ OBJECT_REZZER_KEY ]), 0);
+                //  Set the texture specified by the deployer
                 integer deployerTex = sparam % 1000;
                 integer n = llGetInventoryNumber(INVENTORY_TEXTURE);
                 integer i;

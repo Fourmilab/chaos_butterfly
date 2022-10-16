@@ -493,9 +493,9 @@ It accepts commands as follows:
 
 In addition the Access, Channel, and Clear utility commands are
 accepted as for the butterfly.  The deployed butterflies all listen for
-commands on the default chat channel, 1963.  If you deploy butterflies
-over a large area, you may need to shout (Ctrl-Enter) chat commands so
-they all hear them.
+commands on the default chat channel plus 1000, 2963.  If you deploy
+butterflies over a large area, you may need to shout (Ctrl-Enter) chat
+commands so they all hear them.
 
 PERMISSIONS AND THE DEVELOPMENT KIT
 

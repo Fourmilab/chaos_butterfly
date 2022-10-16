@@ -121,7 +121,7 @@ Attribution-Share Alike 4.0 International license.
 2022 September 29
 
 After many hours of experimentation, I am getting a few glimmers of
-enlightenent on why particle trails do not align with critical point
+enlightenment on why particle trails do not align with critical point
 gnomons when we're attached to an avatar.  The key clue is that line
 trails, which are placed based upon the transformed Lorenz co-ordinates
 work just fine.  What's happening with particles is, in short, that
@@ -134,8 +134,8 @@ real-time offset from the avatar position to the attachment position,
 and I can't find any way to do this.
 
 We may just have to live with this.  If you want trails that align with
-the Set crit points whie attached, use Set path lines.  Otherwise, it's
-going to be wonky.
+the Set crit points while attached, use Set path lines.  Otherwise,
+it's going to be wonky.
 
 Another infelicitous behaviour of particle trails is that since the
 particle emitter in the butterfly is offset from the avatar's centre,
@@ -623,14 +623,125 @@ Added the video link to the README.md for GitHub.
 Added the video link to the Second Life Marketplace listing:
     https://marketplace.secondlife.com/p/Fourmilab-Chaos-Butterfly/24053377
 
+2022 October 16
 
-Notes and to-do:
+Removed the debug code that set the command channel to 1011 when rezzed
+by the Deployer and replaced it with the production code that sets the
+channel to the current commandChannel + 1000, or 2963 when using the
+default channel.  This required a corresponding change in the Deployer
+so that it sends its flight termination messages to the butterflies on
+that channel.
 
-    (Place particle emitter in link, and then position link at the
-     co-ordinates that put it at avatar's centre point.  But this won't
-     work as skeleton moves the attachment and link away from that.)
+Removed the debug code that set the command channel to 111 when
+attached to an avatar.  We now use the standard commandChannel (default
+1963) regardless of whether we're rezzed from inventory or attached.
 
-    * More than one run session with attached object.
-    * Offset of crit points when wearing
+Made a special butterfly for the Deployer in which the Configuration
+script is deleted.  This keeps butterflies it deploys from blithering
+the welcome message, which would give the incorrect number for the
+chat communication channel.
 
-    * Investigate llMoveToTarget and target() event for fly
+Here is the dependency tree for rebuilding the Chaos Butterfly
+Marketplace distribution from scratch.  It may be used as a checklist
+when preparing new releases.
+
+    Fourmilab Chaos Butterfly
+        user-guide.nc (Fourmilab Chaos Butterfly User Guide)
+        flPlotLine, flPlotLine Permanent
+            flPlotLine.lsl
+        Textures (butterfly*, etc.)
+        Line Plotter *
+            line_plotter.lsl
+        Scripts
+            lorenz.lsl (Lorenz Butterfly)
+            menu_processor.lsl (Menu Processor)
+            script_processor.lsl (Script Processor)
+        Notecard Scripts
+            script_commander.lsl (Script: Commander)
+            script_configuration.lsl (Script: Configuration)
+            script_demonstration.lsl (Script: Demonstration)
+
+        Fourmilab Chaos Butterfly Deployer
+            deployer.lsl (Butterfly Deployer)
+            Fourmilab Chaos Butterfly
+                This is the butterfly object build above, but modified
+                to delete the "Script: Configuration".  This keeps
+                deployed butterflies from cluttering chat and citing
+                the wrong chat channel.
+
+    user-guide.nc (Fourmilab Chaos Butterfly User Guide)
+        Separate copy of User Guide in Marketplace top folder
+
+    Sensitive Dependence Experiment
+        sensitive_dependence.nc (Sensitive Dependence Experiment Instructions)
+        Sensitive Dependence Experiment (composite object consisting of)
+            Sensitive Dependence Experiment
+                configuration_4001.nc (Script: Configuration)
+            Fourmilab Chaos Butterfly /4002
+                configuration_4002.nc (Script: Configuration)
+            These two objects are aligned to precisely the same point
+            and taken into inventory together with the name of the
+            first.
+    Development Kit
+        Logs
+            log.txt (Development Log)
+        Textures
+            All textures in the butterfly from PNG files in the
+            texture directory.
+
+Synchronised all notecard scripts in the Butterfly with those in the
+Git repository.  Installed new notecards in the standard butterfly:
+    Script: Configuration /4001
+    Script: Configuration /4002
+which can simply be renamed to the active configuration script when
+installing in the Sensitive Dependence experiment object.
+
+Confirmed that the flPlotLine and flPlotLine Permanent objects in the
+butterfly both contain the identical flPlotLine.lsl script from the Git
+repository.
+
+Confirmed that the following LSL scripts in the butterfly are identical
+to those in the Git repository.  I give the name in the inventory and
+repository name in parentheses.
+    Lorenz Butterfly        (lorenz.lsl)
+    Menu Processor          (menu_processor.lsl)
+    Script Processor        (script_processor.lsl)
+    Line Plotter *          (line_plotter.lsl)
+
+Updated the Fourmilab Chaos Butterfly User Guide in the butterfly to
+the newer version in the Git repository.
+
+This completes verification of the Butterfly model and all its
+components.  Took a copy into Inventory and saved in the Projects
+directory and Marketplace folder.
+
+Placed the current copy of the Fourmilab Chaos Butterfly User Guide in
+the Marketplace folder.
+
+Updated deployer/scripts/deployer.lsl in the Git repository to the
+version in the object which uses the new chat channel of 2963 used
+by butterflies created by the Deployer.
+
+Updated the butterfly model in the Deployer's inventory to the one just
+built above.
+
+This completes verification of the Deployer.  Took a copy of the
+Deployer into inventory and stored in the Projects folder and the
+Marketplace listing.
+
+Deleted the old separate Deployer folder in the Projects directory.
+The Deployer is now a top-level item.
+
+Verified that Notecards in the Projects directory agree with those in
+the butterfly model.  Added the configuration notecards for the /4001
+and /4002 butterflies for Sensitive Dependence to the Projects folder.
+
+Updated flPlotLine and flPlotLine Permanent in the Projects folder to
+be identical to those in the butterfly.
+
+2022 October 17
+
+Rebuilt the Sensitive Dependence Experiment composite object using the
+latest version of the butterfly object, tested, and installed in the
+Projects directory and the Marketplace/Sensitive Dependence Experiment
+folder.

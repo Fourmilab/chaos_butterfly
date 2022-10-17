@@ -1,5 +1,5 @@
 
-                    Fourmilab Lorenz Butterfly
+                    Fourmilab Chaos Butterfly
 
                         Development Log
 
@@ -745,3 +745,8 @@ Rebuilt the Sensitive Dependence Experiment composite object using the
 latest version of the butterfly object, tested, and installed in the
 Projects directory and the Marketplace/Sensitive Dependence Experiment
 folder.
+
+Installed this log file in the Marketplace Development Kit/Logs folder
+and the Projects folder.
+
+Marketplace release v1.0.
